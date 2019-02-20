@@ -3,7 +3,7 @@
 
 #define MAX_BYTES 256
 
-typedef enum messageID __attribute__((__packed__))
+typedef enum messageClassType __attribute__((__packed__))
 {
     UNKNOWN = 0x00,
     NAV = 0x01,
@@ -20,19 +20,18 @@ typedef enum messageID __attribute__((__packed__))
     LOG = 0x21,
     SEC = 0x27,
     HNR = 0x28
-}
-
+};
 
 typedef struct ubxFrame __attribute__((__packed__))
 {
     uint16_t syncChar;
-    uint8_t messageClass;
-    uint8_t messageID;
+    messageClassType messageClass;
+    messageIDType messageId;
     uint16_t messageLength;
     uint8_t messagePayload[MAX_BYTES];
     uint8_t checksumA;
     uint8_t checksumB;
-}
+};
 
 int calculateChecksum(ubxFrame*);
 int validateChecksum(ubxFrame*);

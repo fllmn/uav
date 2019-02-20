@@ -57,4 +57,11 @@ int processMessage()
     int ret = -1;
 
     switch(ubxStorage.messageID)
+    {
+    case NAV:
+        processNAV(&ubxStorage);
+        break;
+    }
 }
+
+
