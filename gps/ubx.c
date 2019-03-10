@@ -42,15 +42,26 @@ int validateChecksum(ubxFrame *frame)
     return ret;
 }
 
-int populateStorage(uint8_t *buffer)
+int bufferToFrame(uint8_t *buffer)
 {
     int ret = -1;
 
     memcpy(&ubxStorage, buffer, STATIC_HEADER_SIZE);
-    memcpy(&ubxStorage.messagePayload, buffer + STATIC_HEADER_SIZE, ubxStorage.messageLength + CHECKSUM_SIZE);
+    memcpy(&ubxStorage.messagePayload, buffer + STATIC_HEADER_SIZE, ubxStorage.messageLength);
+    memcpy(&ubxStorage, buffer + STATIC_HEADER_SIZE + ubxStorage.messageLength, 2*sizeof(uint8_t));
     ret = 0;
     return ret;
 }
+
+int frameToBuffer(uint8_t *buffer, uint8_t *length)
+{
+    int ret = -1;
+
+    memcpy(buffer, &ubxStorage, ubxStorage.messageLength + STATIC_HEADER_SIZE);
+    memcpy(buffer + ubxStorage.messageLength + STATIC_HEADER_SIZE, &ubxStorage.checksumA, 2*sizeof(uint8_t));
+
+}
+
 
 int processMessage()
 {

@@ -51,6 +51,14 @@ typedef struct llhFrame __attribute__((__packed__))
     uint32_t verticalAccuracy;
 };
 
-int processNav(ubxFrame *ubxStorage);
+typedef struct positionType
+{
+    double X;
+    double Y;
+    double Z;
+    double timeOfWeek;
+};
 
+int processNav(ubxFrame *ubxStorage);
+void getEcefPosition(positionType *latestPos)
 #endif //UBX_NAV_H
