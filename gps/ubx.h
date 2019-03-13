@@ -1,9 +1,10 @@
 #ifndef UBX_H
 #define UBX_H
 
-#define MAX_BYTES 256
+#include <stdint.h>
+#include "ubx-types.h"
 
-typedef enum messageClassType __attribute__((__packed__))
+typedef enum __attribute__((__packed__)) messageClassType
 {
     UNKNOWN = 0x00,
     NAV = 0x01,
@@ -20,19 +21,10 @@ typedef enum messageClassType __attribute__((__packed__))
     LOG = 0x21,
     SEC = 0x27,
     HNR = 0x28
-};
+} messageClassType;
 
-typedef struct ubxFrame __attribute__((__packed__))
-{
-    uint16_t syncChar;
-    messageClassType messageClass;
-    messageIDType messageId;
-    uint16_t messageLength;
-    uint8_t messagePayload[MAX_BYTES];
-    uint8_t checksumA;
-    uint8_t checksumB;
-};
 
-int calculateChecksum(ubxFrame*);
-int validateChecksum(ubxFrame*);
+int calculateChecksum(ubxFrame* ubxStorage);
+int validateChecksum(ubxFrame* ubxStorage);
+extern int processNav(ubxFrame *ubxStorage);
 #endif //UBX_H

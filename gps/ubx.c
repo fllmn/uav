@@ -1,14 +1,17 @@
+#include <string.h>
 #include "ubx.h"
+#include "ubx-nav.h"
+
 
 #define STATIC_HEADER_SIZE 6
 #define CHECKSUM_SIZE 2
 
-ubxFrame ubxStorage
+ubxFrame ubxStorage;
 
 int calculateChecksum(ubxFrame *frame)
 {
     int ret = -1;
-    uint8_t *bytePointer = frame + sizeof(uint16_t);
+    uint8_t *bytePointer = (uint8_t*) frame + sizeof(uint16_t);
 
     for(uint16_t i = 0; i < frame->messageLength+4;i++)
     {
@@ -23,7 +26,7 @@ int calculateChecksum(ubxFrame *frame)
 int validateChecksum(ubxFrame *frame)
 {
     int ret = -1;
-    uint8_t *bytePointer = frame + sizeof(uint16_t);
+    uint8_t *bytePointer = (uint8_t*) frame + sizeof(uint16_t);
     uint8_t checksumA = 0;
     uint8_t checksumB = 0;
 
@@ -59,7 +62,10 @@ int frameToBuffer(uint8_t *buffer, uint8_t *length)
 
     memcpy(buffer, &ubxStorage, ubxStorage.messageLength + STATIC_HEADER_SIZE);
     memcpy(buffer + ubxStorage.messageLength + STATIC_HEADER_SIZE, &ubxStorage.checksumA, 2*sizeof(uint8_t));
+    *length = ubxStorage.messageLength + STATIC_HEADER_SIZE + CHECKSUM_SIZE;
+    ret = 0;
 
+    return ret;
 }
 
 
@@ -67,12 +73,15 @@ int processMessage()
 {
     int ret = -1;
 
-    switch(ubxStorage.messageID)
+    switch(ubxStorage.messageId)
     {
     case NAV:
-        processNAV(&ubxStorage);
+        processNav(&ubxStorage);
+        ret = 0;
         break;
     }
+
+    return ret;
 }
 
 

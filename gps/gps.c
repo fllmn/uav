@@ -10,9 +10,12 @@ int initGps(pthread_mutex_t *lock, int rxPin, int txPin)
     rc_pinmux_set(rxPin, PINMUX_UART);
     rc_pinmux_set(txPin, PINMUX_UART);
     mutexLock = *lock;
+    return 0;
 }
 
 int getLatestSolution(gps_sol * solution)
 {
-    *solution = &latestSolution;
+    
+    solution = &latestSolution;
+    return 1;
 }

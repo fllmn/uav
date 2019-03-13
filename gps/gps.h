@@ -1,7 +1,7 @@
 #ifndef GPS_H
 #define GPS_H
 
-struct gps_sol
+typedef struct
 {
     double latitude;
     double longitude;
@@ -10,9 +10,9 @@ struct gps_sol
     double vel_e;
     double vel_d;
     long solValid;
-}
+} gps_sol;
 
-int getLatestSolution(gps_sol*);
+int getLatestSolution(gps_sol* gps_pos);
 
 int getGpsTime(long * time);
 
