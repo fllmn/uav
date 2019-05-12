@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <robotcontrol.h> // includes ALL Robot Control subsystems
+#include "gps.h"
 
 // function declarations
 /* void on_pause_press();
@@ -48,7 +49,11 @@ static int dsm_thread_ret_val;
 unsigned int dsm_buffer_idx= 0;
 int dsm_buffer[DSM_BUFFER_SIZE][8];
 
-
+// vars for GPS
+static pthread_t gps_thread;
+static int gps_thread_ret_val;
+#define GPS_BUFFER_SIZR 100;
+unsigned int gps_buffer_idx = 0;
 
 /**
  * Make the Pause button toggle between paused and running states.
@@ -244,6 +249,17 @@ void *dsm_thread_func(){
 	 return (void*)&dsm_thread_ret_val;
 }
 
+void *gps_thread_func()
+{
+    gps_thread_ret_val = gps_main(1);
+    if (gps_thread_ret_val == -1)
+    {
+        rc_set_state(EXITING);
+    }
+
+    return (void*)&gps_thread_ret_val;
+}
+
 int main()
 {
 	int ret;
@@ -284,13 +300,13 @@ int main()
         fprintf(stderr, "ERROR: Failed to start I2C sampler thread\n");
         return -1;
     } */
-	dsm_main();
+//	dsm_main();
 /* 	if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
         fprintf(stderr, "ERROR: Failed to start DSM passthrough thread\n");
         return -1;
     } */
-	
-	
+
+        gps_main(1);
 	// Sleep and let threads work
 	while(rc_get_state()==RUNNING){
 		sleep(1);
