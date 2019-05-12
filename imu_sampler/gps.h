@@ -1,2 +1,1 @@
-int initialize_gps(int bus);
-int gps_main(int bus);
+void *gps_thread_func();

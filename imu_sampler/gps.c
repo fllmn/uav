@@ -9,6 +9,10 @@
 #define PARITY 0
 #define READ_SIZE 128
 
+static int gps_thread_ret_val;
+#define GPS_BUFFER_SIZR 100;
+unsigned int gps_buffer_idx = 0;
+
 struct uart_conf{
     int bus;
     int baudrate;
@@ -133,3 +137,14 @@ int gps_main(int bus)
     return 0;
 }
 
+
+void *gps_thread_func()
+{
+  gps_thread_ret_val = gps_main(1);
+  if (gps_thread_ret_val == -1)
+    {
+      rc_set_state(EXITING);
+    }
+
+  return (void*)&gps_thread_ret_val;
+}
