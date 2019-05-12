@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <robotcontrol.h> // includes ALL Robot Control subsystems
 #include "gps.h"
-#include "i2c_thread.c"
-#include "dsm_thread.c"
+#include "i2c_thread.h"
+#include "dsm_thread.h"
 
 // threads
 static pthread_t i2c_thread;

@@ -1,6 +1,5 @@
-#include <robotcontrol.h>
+#include "i2c_thread.h"
 // Global variables for IMU/DMP
-
 static int i2c_thread_ret_val;
 #define MPU_BUFFER_SIZE   200
 rc_mpu_config_t mpu_config; 

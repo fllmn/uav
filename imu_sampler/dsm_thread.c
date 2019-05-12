@@ -1,4 +1,4 @@
-#include <robotcontrol.h>
+#include "dsm_thread.h"
 static int dsm_thread_ret_val;
 #define	DSM_BUFFER_SIZE	  100
 unsigned int dsm_buffer_idx= 0;
