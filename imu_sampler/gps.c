@@ -7,7 +7,7 @@
 #define CANONICAL 0
 #define STOP_BITS 1
 #define PARITY 0
-#define READ_SIZE 128
+#define READ_SIZE 96
 
 static int gps_thread_ret_val;
 #define GPS_BUFFER_SIZR 100;
@@ -20,11 +20,13 @@ struct uart_conf{
     int canonical_en;
     int stop_bits;
     int parity_en;
-    char buf[256];
+    char buf[512];
 } uart_conf;
 
 static void setup_uart()
 {
+	rc_pinmux_set(GPS_HEADER_PIN_3,	PINMUX_UART);
+	rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
     rc_uart_init(uart_conf.bus, uart_conf.baudrate, uart_conf.timeout, uart_conf.canonical_en, uart_conf.stop_bits, uart_conf.parity_en);
     rc_uart_flush(uart_conf.bus);
 }
@@ -70,9 +72,26 @@ static void disable_nmea_message(int bus, char *message)
     tx_buf[27] = (uint8_t) '\r';
     tx_buf[28] = (uint8_t) '\n';
 
-    printf("Send_bdduf %s\n",tx_buf);
+    //printf("Send_bdduf %s\n",tx_buf);
 
     rc_uart_write(bus,(uint8_t*) tx_buf, 29);	
+
+}
+
+void enable_ubx_nav()
+{
+	uint8_t tx_buf[128];
+
+	size_t mess_size = 0;
+
+	get_nav_enable_mess(tx_buf, &mess_size);
+
+	/*for (int i = 0; i < mess_size; i++)
+	{
+		printf("%02X ",tx_buf[i]);
+	}
+	printf("\n");*/
+	rc_uart_write(uart_conf.bus,  tx_buf, mess_size);
 
 }
 
@@ -80,7 +99,7 @@ int initialize_gps(int bus)
 {
     if (!(bus==1||bus==2))
     {
-        printf(stderr, "ERROR: illegal bus number");
+        printf("ERROR: illegal bus number\n");
         return -1;
     }
 
@@ -98,6 +117,9 @@ int initialize_gps(int bus)
     disable_nmea_message(bus, "VTG");
     disable_nmea_message(bus, "GLL");
     disable_nmea_message(bus, "GGA");
+    disable_nmea_message(bus, "GSA");
+
+    enable_ubx_nav();
 
     return 0;
 }
@@ -108,7 +130,7 @@ int gps_main(int bus)
 {
     if (initialize_gps(bus) == -1)
     {
-        printf(stderr, "ERROR: failed to initialize uart");
+        printf("ERROR: failed to initialize uart\n");
         return -1;
     }
 
@@ -118,18 +140,19 @@ int gps_main(int bus)
         while (rc_uart_bytes_available(uart_conf.bus) > READ_SIZE)
         {
 
-            rc_uart_read_bytes(uart_conf.bus, uart_conf.buf[rem_data], READ_SIZE-1);
-            rem_data = READ_SIZE-1;
+            rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], READ_SIZE-1);
+            rem_data = rem_data + READ_SIZE-1;
 
-            switch(process_buffer(uart_conf.buf, &rem_data))
+            switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
             {
             case NAV:
-                printf("Got nav package");
-                //getPosition()
+                printf("Latitude %f deg, Longitude %f deg\n", getLatitude(), getLongitude());
                 break;
             case UNKNOWN:
-                printf("Got UNKNOWN package");
+                //printf("Got UNKNOWN package\n");
                 break;
+default:
+		break;
             }
         }
     }
