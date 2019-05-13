@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <string.h>
-#include "ubx-cfg.h"
 #include "ubx-types.h"
+#include "ubx-cfg.h"
 typedef enum  __attribute__((__packed__)) messageConfId
 {
     PRT = 0x00,
@@ -51,9 +51,14 @@ int setMessageStat(ubxFrame *ubxStorage, uint8_t messageClass, uint8_t messageId
 
     ubxStorage->messageLength = 3;
 
-    memcpy(&ubxStorage->messagePayload, &messageClass, sizeof(uint8_t));
-    memcpy(&ubxStorage->messagePayload + 1, &messageId, sizeof(uint8_t));
-    memcpy(&ubxStorage->messagePayload + 2, &messageRate, sizeof(uint8_t));
+    ubxStorage->messagePayload[0] = messageClass;
+    ubxStorage->messagePayload[1] = messageId;
+    ubxStorage->messagePayload[2] = messageRate;
+    ubxStorage->messageLength = 3;
+
+    //memcpy(&ubxStorage->messagePayload, &messageClass, sizeof(uint8_t));
+    //memcpy(&ubxStorage->messagePayload + 1, &messageId, sizeof(uint8_t));
+    //memcpy(&ubxStorage->messagePayload + 2, &messageRate, sizeof(uint8_t));
 
     ret = 0;
     return ret;

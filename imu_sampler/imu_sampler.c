@@ -306,7 +306,7 @@ int main()
         return -1;
     } */
 
-        gps_main(1);
+        gps_main(2);
 	// Sleep and let threads work
 	while(rc_get_state()==RUNNING){
 		sleep(1);

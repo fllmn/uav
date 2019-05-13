@@ -27,5 +27,8 @@ typedef enum __attribute__((__packed__)) messageClassType
 int calculateChecksum(ubxFrame* ubxStorage);
 int validateChecksum(ubxFrame* ubxStorage);
 messageClassType process_buffer(uint8_t *buffer, size_t *size);
+void get_nav_enable_mess(uint8_t *tx_buf, size_t *size);
+double getLatitude();
+double getLongitude();
 extern int processNav(ubxFrame *ubxStorage);
 #endif //UBX_H

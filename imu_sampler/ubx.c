@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "ubx.h"
 #include "ubx-nav.h"
-
+#include "ubx-cfg.h"
 
 #define STATIC_HEADER_SIZE 6
 #define CHECKSUM_SIZE 2
@@ -38,6 +38,7 @@ int validateChecksum(ubxFrame *frame)
         bytePointer++;
     }
 
+//    printf("checksumA=%02X checksumB=%02X realCSA=%02X realCSB=%02X\n", checksumA, checksumB, frame->checksumA, frame->checksumB);
     if (checksumA == frame->checksumA && checksumB == frame->checksumB)
     {
         ret = 0;
@@ -52,15 +53,17 @@ int bufferToFrame(uint8_t *buffer)
 
     memcpy(&ubxStorage, buffer, STATIC_HEADER_SIZE);
     memcpy(&ubxStorage.messagePayload, buffer + STATIC_HEADER_SIZE, ubxStorage.messageLength);
-    memcpy(&ubxStorage, buffer + STATIC_HEADER_SIZE + ubxStorage.messageLength, 2*sizeof(uint8_t));
-    ret = ubxStorage.messagePayload;
+    memcpy(&ubxStorage.checksumA, buffer + STATIC_HEADER_SIZE + ubxStorage.messageLength, 2*sizeof(uint8_t));
+    ret = ubxStorage.messageLength;
     return ret;
 }
 
-int frameToBuffer(uint8_t *buffer, uint8_t *length)
+int frameToBuffer(uint8_t *buffer, size_t *length)
 {
     int ret = -1;
 
+
+    memcpy(&ubxStorage.syncChar, &sync_char, sizeof(sync_char));
     memcpy(buffer, &ubxStorage, ubxStorage.messageLength + STATIC_HEADER_SIZE);
     memcpy(buffer + ubxStorage.messageLength + STATIC_HEADER_SIZE, &ubxStorage.checksumA, 2*sizeof(uint8_t));
     *length = ubxStorage.messageLength + STATIC_HEADER_SIZE + CHECKSUM_SIZE;
@@ -69,57 +72,91 @@ int frameToBuffer(uint8_t *buffer, uint8_t *length)
     return ret;
 }
 
+void get_nav_enable_mess(uint8_t *buf, size_t *size)
+{
+	setMessageStat(&ubxStorage, NAV, NAV_PVT, 1);
+	calculateChecksum(&ubxStorage);
+	frameToBuffer((uint8_t*) buf, size);
+}
+
+double getLatitude(){
+	positionType *latestPosition = getLatestPosition();
+	return latestPosition->latitude;
+}
+
+double getLongitude(){
+	positionType *latestPosition = getLatestPosition();
+	return latestPosition->longitude;
+}
+
 messageClassType processMessage()
 {
     messageClassType ret = UNKNOWN; 
 
-    switch(ubxStorage.messageId)
+    switch(ubxStorage.messageClass)
     {
     case NAV:
         processNav(&ubxStorage);
         ret = NAV;
         break;
-    default:
-        ret = UNKNOWN;
+	case ACK:
+	ret = ACK;
+	break;
     }
 
     if (ret == UNKNOWN)
     {
-        printf(stderr, "ERROR: %s Unknown message type receives", __FUNCTION__);
+        printf("ERROR: %s Unknown message type receives\n", __FUNCTION__);
     }
 
-    return ret;
+    return ubxStorage.messageClass;
+}
+
+void printBuf(uint8_t *buf)
+{
+	for (int i = 0; i < 70; i++)
+	{
+		printf("%02X", buf[i]);
+	}
+	printf("\n");
 }
 
 messageClassType process_buffer(uint8_t *buf, size_t *size)
 {
-    while(strncmp(buf, sync_char, 2) != 0 && *size > 0)
+    while(strncmp((char*)buf, sync_char, 2) != 0 && *size > 0)
     {
         buf++;
         (*size)--;
     }
 
-    if (strncmp(buf, sync_char, 2) != 0)
+    if (strncmp((char*)buf, sync_char, 2) != 0)
     {
-        printf(stderr, "ERROR: %s buffer did not contain and sync char", __FUNCTION__);
+        printf("ERROR: %s buffer did not contain and sync char", __FUNCTION__);
         return UNKNOWN;
     }
 
-    int bytes_used = bufferToFrame(buf) + 4;
+    size_t bytes_used = (size_t) bufferToFrame(buf) + 8;
 
+
+    printf("bufferSize=%d, bytesTaken=%d\n",*size, bytes_used);
     if (*size > bytes_used)
     {
         memmove(buf, &buf[bytes_used], ((*size)-bytes_used)*sizeof(uint8_t));
-        memset(&buf[*size], 0, (MAX_BYTES - (*size))*sizeof(uint8_t));
+        memset(&buf[(*size)-bytes_used], 0, bytes_used*sizeof(uint8_t));
+	*size = *size-bytes_used;
     } else
     {
-        printf(stderr, "ERROR: %s buffer overflow", __FUNCTION__);
+        //printf("ERROR: %s buffer overflow\n", __FUNCTION__);
+	return UNKNOWN;
     }
 
-    if (!validateChecksum(&ubxStorage))
+    if (validateChecksum(&ubxStorage))
     {
-        printf(stderr, "ERROR: %s checksum failed", __FUNCTION__);
+        printf("ERROR: %s checksum failed\n", __FUNCTION__);
+	return UNKNOWN;
     }
+
+
 
     return processMessage(); 
 }
