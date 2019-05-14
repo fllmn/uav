@@ -42,7 +42,7 @@ int dsm_main(){
   }
   rc_adc_cleanup();
   if(rc_servo_power_rail_en(0)){
-    fprintf(stderr,"ERROR: failed to enable power rail\n");
+    fprintf(stderr,"ERROR: failed to disable power rail\n");
     return -1;
   }
 

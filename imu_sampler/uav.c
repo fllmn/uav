@@ -55,14 +55,14 @@ int main()
 
   // start signal handler so we can exit cleanly
   if(rc_enable_signal_handler()==-1){
-    fprintf(stderr,"ERROR: failed to start signal handler\n");
+    fprintf(stderr,"ERROR: Failed to start signal handler\n");
     return -1;
   }
 
   // initialize pause button
   if(rc_button_init(RC_BTN_PIN_PAUSE, RC_BTN_POLARITY_NORM_HIGH,
 		    RC_BTN_DEBOUNCE_DEFAULT_US)){
-    fprintf(stderr,"ERROR: failed to initialize pause button\n");
+    fprintf(stderr,"ERROR: Failed to initialize pause button\n");
     return -1;
   }
   // Assign functions to be called when button events occur
@@ -82,9 +82,9 @@ int main()
     fprintf(stderr, "ERROR: Failed to start I2C sampler thread\n");
     return -1;
   } 
-  //	dsm_main();
+ 
   if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
-    fprintf(stderr, "ERROR: Failed to start DSM passthrough thread\n");
+    fprintf(stderr, "ERROR: Failed to start DSM thread\n");
     return -1;
   } 
 
@@ -104,21 +104,21 @@ int main()
   if ( ret == 1){
     fprintf(stderr,"ERROR: IMU thread timed out\n");
   }
-  printf("I2c thread  returned:%d\n",*(int*)thread_retval);
+  printf("I2c thread returned:%d\n",*(int*)thread_retval);
   
  
   ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
   if ( ret == 1){
-    fprintf(stderr,"ERROR: DSM passthrough thread timed out\n");
+    fprintf(stderr,"ERROR: DSM thread timed out\n");
   }
-  printf(" DSM passthrough thread  returned:%d\n",*(int*)thread_retval);
+  printf("DSM thread returned:%d\n",*(int*)thread_retval);
 	
 
   ret = rc_pthread_timed_join(gps_thread, &thread_retval, 1.5);
   if ( ret == 1){
     fprintf(stderr,"ERROR: GPS thread timed out\n");
   }
-  printf(" GPS thread  returned:%d\n",*(int*)thread_retval);
+  printf("GPS thread returned:%d\n",*(int*)thread_retval);
 
   // turn off LEDs and close file descriptors
   rc_led_set(RC_LED_GREEN, 0);
