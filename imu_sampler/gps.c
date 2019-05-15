@@ -155,6 +155,7 @@ default:
 		break;
             }
         }
+	rc_usleep(10000);
     }
 
     return 0;

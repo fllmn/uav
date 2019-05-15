@@ -95,8 +95,7 @@ int main()
   //gps_main(1);
   // Sleep and let threads work
   while(rc_get_state()==RUNNING){
-    sleep(1);
-
+    rc_usleep(1000);
   }		
 	
   // join i2c thread with 1.5s timeout
