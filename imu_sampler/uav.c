@@ -78,15 +78,17 @@ int main()
   rc_set_state(RUNNING);
 	
   //start threads
+  i2c_thread_func();
+  
   if(rc_pthread_create(&i2c_thread, i2c_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start I2C sampler thread\n");
     return -1;
   } 
  
-  if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
+/*   if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start DSM thread\n");
     return -1;
-  } 
+  }  */
 
   if(rc_pthread_create(&gps_thread, gps_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start GPS thread\n");
@@ -106,12 +108,12 @@ int main()
   printf("I2c thread returned:%d\n",*(int*)thread_retval);
   
  
-  ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
+/*   ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
   if ( ret == 1){
     fprintf(stderr,"ERROR: DSM thread timed out\n");
   }
   printf("DSM thread returned:%d\n",*(int*)thread_retval);
-	
+	 */
 
   ret = rc_pthread_timed_join(gps_thread, &thread_retval, 1.5);
   if ( ret == 1){
