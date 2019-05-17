@@ -1,7 +1,7 @@
+#include "circular_buffer.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <pthread.h>
-#include "circular_buffer.h"
 #include "offset_memcpy.h"
 
 
@@ -18,7 +18,7 @@ struct cbuffer_t {
 
 
 
-cbuffer_handle_t empty_cbuffer()
+cbuffer_handle_t create_cbuffer()
 {
   return (cbuffer_handle_t) malloc(sizeof(cbuffer_t));
 }
@@ -137,33 +137,27 @@ static void retreat_pointer(cbuffer_handle_t cbuf)
 
 int cbuffer_put(cbuffer_handle_t cbuf, void * in_data)
 {
-  /* 	if (cbuf->element_size != data_size )
-	{
-	printf("Size of added element does not match the size specified at init.\n");
-	return -1;
-	} */
+	pthread_mutex_lock(&cbuf->lock);
+	if(cbuf->print) printf("Put-rutine got lock\n");
 	
-  pthread_mutex_lock(&cbuf->lock);
-  if(cbuf->print) printf("Put-rutine got lock\n");
+	memcpy_offset_dest(cbuf->buffer,in_data, cbuf->element_size * cbuf->write_pos, cbuf->element_size);
+	if(cbuf->print) printf("Put data at pos %d\n",cbuf->write_pos );
 	
-  memcpy_offset_dest(cbuf->buffer,in_data, cbuf->element_size * cbuf->write_pos, cbuf->element_size);
-  if(cbuf->print) printf("Put data at pos %d\n",cbuf->write_pos );
+	advance_pointer(cbuf);
 	
-  advance_pointer(cbuf);
-	
-  pthread_mutex_unlock(&cbuf->lock);
-  if(cbuf->print) printf("Put-routine released lock\n");
-  return 0;
-	
+	pthread_mutex_unlock(&cbuf->lock);
+	if(cbuf->print) printf("Put-routine released lock\n");
+	return 0;	
 }
 
 int cbuffer_get(cbuffer_handle_t cbuf, void * out_data)
 {
 
-  if(!cbuffer_empty(cbuf))
+	if(!cbuffer_empty(cbuf))
     {
       pthread_mutex_lock(&cbuf->lock);
       if(cbuf->print) printf("Get-rutine got lock\n");
+	  
       memcpy_offset_source(out_data,cbuf->buffer, cbuf->element_size * cbuf->read_pos, cbuf->element_size);
 		
       retreat_pointer(cbuf);
@@ -172,9 +166,62 @@ int cbuffer_get(cbuffer_handle_t cbuf, void * out_data)
       if(cbuf->print) printf("Get-routine released lock\n");
       return 0;
     }
-  if(cbuf->print) printf("Attempted to read empty buffer\n");
-  return -1; // should this be !?
+	if(cbuf->print) printf("Attempted to read empty buffer\n");
+	return -1; // should this be !?
 }
+
+int cbuffer_try_get(cbuffer_handle_t cbuf, void * out_data)
+{
+
+	if(!cbuffer_empty(cbuf))
+    {
+      if(pthread_mutex_trylock(&cbuf->lock)) return -1; // buffer busy dont lock
+      if(cbuf->print) printf("Get-rutine got lock\n");
+	  
+      memcpy_offset_source(out_data,cbuf->buffer, cbuf->element_size * cbuf->read_pos, cbuf->element_size);
+		
+      retreat_pointer(cbuf);
+		
+      pthread_mutex_unlock(&cbuf->lock);
+      if(cbuf->print) printf("Get-routine released lock\n");
+      return 0;
+    }
+	if(cbuf->print) printf("Attempted to read empty buffer\n");
+	return -1; // should this be !?
+}
+
+
+
+int cbuffer_top(cbuffer_handle_t cbuf, void * out_data)
+{
+
+  if(!cbuffer_empty(cbuf))
+    {
+    pthread_mutex_lock(&cbuf->lock);
+	if(cbuf->print) printf("Top-rutine got lock\n");
+	
+	size_t temp_read_pos;
+	if (cbuf->write_pos == 0){
+		temp_read_pos = cbuf->max_elements -1;
+	}
+	else{
+		temp_read_pos = cbuf->write_pos-1;
+	}
+
+		memcpy_offset_source(out_data,cbuf->buffer, cbuf->element_size * temp_read_pos, cbuf->element_size);
+		
+		
+		pthread_mutex_unlock(&cbuf->lock);
+	  
+		if(cbuf->print) printf("Top-routine released lock\n");
+		return 0;
+    }
+	if(cbuf->print) printf("Attempted to read empty buffer\n");
+	return -1; // should this be !?
+}
+
+
+
 
 
 

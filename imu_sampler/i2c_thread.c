@@ -1,3 +1,4 @@
+#include <robotcontrol.h>
 #include "i2c_thread.h"
 #include "imu.h"
 #include "baro.h"
@@ -11,7 +12,7 @@ int i2c_main(){
 	if (initialize_imu() ) return -1;
 	
 	while(rc_get_state()!=EXITING){
-		rc_usleep(baro_sample_time());
+		sample_imu();
 		sample_baro();
 	}
 	
@@ -28,7 +29,7 @@ void* i2c_thread_func() // wrapper function for the i2c main which casts the ret
 	i2c_thread_ret_val = i2c_main();
 	if (i2c_thread_ret_val)
     {
-		rc_set_state(EXITING);
+		rc_set_state(EXITING); // ism this needed? OBS
     }
 	return (void*)&i2c_thread_ret_val;
 }

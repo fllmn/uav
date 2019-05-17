@@ -3,12 +3,13 @@
 #include "gps.h"
 #include "i2c_thread.h"
 #include "dsm_thread.h"
+#include "log_thread.h"
 
 // threads
 static pthread_t i2c_thread;
 static pthread_t dsm_thread;
 static pthread_t gps_thread;
-
+static pthread_t log_thread;
 
 
 
@@ -78,7 +79,6 @@ int main()
   rc_set_state(RUNNING);
 	
   //start threads
-  i2c_thread_func();
   
   if(rc_pthread_create(&i2c_thread, i2c_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start I2C sampler thread\n");
@@ -94,18 +94,24 @@ int main()
     fprintf(stderr, "ERROR: Failed to start GPS thread\n");
     return -1;
   } 
-  //gps_main(1);
+  
+  if(rc_pthread_create(&log_thread, log_thread_func, NULL, SCHED_OTHER, 0)){
+    fprintf(stderr, "ERROR: Failed to start LOG thread\n");
+    return -1;
+  } 
+   
+  
   // Sleep and let threads work
   while(rc_get_state()==RUNNING){
     rc_usleep(1000);
   }		
 	
   // join i2c thread with 1.5s timeout
-  ret = rc_pthread_timed_join(i2c_thread, &thread_retval, 1.5);
-  if ( ret == 1){
-    fprintf(stderr,"ERROR: IMU thread timed out\n");
-  }
-  printf("I2c thread returned:%d\n",*(int*)thread_retval);
+	ret = rc_pthread_timed_join(i2c_thread, &thread_retval, 1.5);
+	if ( ret == 1){
+		fprintf(stderr,"ERROR: IMU thread timed out\n");
+	}
+	printf("I2c thread returned:%d\n",*(int*)thread_retval);
   
  
 /*   ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
@@ -115,12 +121,21 @@ int main()
   printf("DSM thread returned:%d\n",*(int*)thread_retval);
 	 */
 
-  ret = rc_pthread_timed_join(gps_thread, &thread_retval, 1.5);
-  if ( ret == 1){
-    fprintf(stderr,"ERROR: GPS thread timed out\n");
-  }
-  printf("GPS thread returned:%d\n",*(int*)thread_retval);
+	ret = rc_pthread_timed_join(gps_thread, &thread_retval, 1.5);
+	if ( ret == 1){
+		fprintf(stderr,"ERROR: GPS thread timed out\n");
+	}
+	printf("GPS thread returned:%d\n",*(int*)thread_retval);
 
+  
+	ret = rc_pthread_timed_join(log_thread, &thread_retval, 1.5);
+	if ( ret == 1){
+		fprintf(stderr,"ERROR: LOG thread timed out\n");
+	}
+	printf("LOG thread returned:%d\n",*(int*)thread_retval);
+  
+  
+  
   // turn off LEDs and close file descriptors
   rc_led_set(RC_LED_GREEN, 0);
   rc_led_set(RC_LED_RED, 0);
