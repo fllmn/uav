@@ -13,6 +13,7 @@ int i2c_main(){
 	
 	while(rc_get_state()!=EXITING){
 		sample_imu();
+		rc_usleep(100);
 		sample_baro();
 	}
 	

@@ -15,7 +15,7 @@ void* log_thread_func()
 	rc_usleep(LOG_DELAY_US);
 	while(rc_get_state()!=EXITING){
 		
-		rc_usleep(1);
+		rc_usleep(5000); 
 		log_imu();
 		log_baro();
 		log_dsm();
