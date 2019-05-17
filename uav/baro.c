@@ -1,8 +1,9 @@
 #include "baro.h"
 #include "circular_buffer.h"
+#include <stdio.h>
 //global vars for bmp (barometer)
 #define		BMP_BUFFER_SIZE	  10
-#define 	BMP_CHECK_HZ      5
+
 cbuffer_handle_t bmp_buffer; //Declare a cbuffer
 
 typedef struct bmp_entry {

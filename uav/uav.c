@@ -85,10 +85,10 @@ int main()
     return -1;
   } 
  
-/*   if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
+   if(rc_pthread_create(&dsm_thread, dsm_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start DSM thread\n");
     return -1;
-  }  */
+  }  
 
   if(rc_pthread_create(&gps_thread, gps_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start GPS thread\n");
@@ -106,28 +106,28 @@ int main()
     rc_usleep(1000);
   }		
 	
-  // join i2c thread with 1.5s timeout
+  // join i2c thread
 	ret = rc_pthread_timed_join(i2c_thread, &thread_retval, 1.5);
 	if ( ret == 1){
 		fprintf(stderr,"ERROR: IMU thread timed out\n");
 	}
 	printf("I2c thread returned:%d\n",*(int*)thread_retval);
   
- 
-/*   ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
+ // dsm i2c thread
+   ret = rc_pthread_timed_join(dsm_thread, &thread_retval, 1.5);
   if ( ret == 1){
     fprintf(stderr,"ERROR: DSM thread timed out\n");
   }
   printf("DSM thread returned:%d\n",*(int*)thread_retval);
-	 */
-
+	
+// join gps thread
 	ret = rc_pthread_timed_join(gps_thread, &thread_retval, 1.5);
 	if ( ret == 1){
 		fprintf(stderr,"ERROR: GPS thread timed out\n");
 	}
 	printf("GPS thread returned:%d\n",*(int*)thread_retval);
 
-  
+  // join log thread 
 	ret = rc_pthread_timed_join(log_thread, &thread_retval, 1.5);
 	if ( ret == 1){
 		fprintf(stderr,"ERROR: LOG thread timed out\n");

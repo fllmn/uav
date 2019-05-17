@@ -2,7 +2,7 @@
 #include <robotcontrol.h>
 #include "imu.h"
 #include "baro.h"
-//#include "dsm_thread.h"
+#include "dsm_thread.h"
 #include "gps.h"
 
 #define LOG_DELAY_US   1000000
@@ -18,6 +18,7 @@ void* log_thread_func()
 		rc_usleep(1);
 		log_imu();
 		log_baro();
+		log_dsm();
 	}
 	log_thread_ret_val = 0;
 	return (void*)&log_thread_ret_val;
