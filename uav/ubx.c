@@ -38,7 +38,7 @@ int validateChecksum(ubxFrame *frame)
         bytePointer++;
     }
 
-//    printf("checksumA=%02X checksumB=%02X realCSA=%02X realCSB=%02X\n", checksumA, checksumB, frame->checksumA, frame->checksumB);
+    //    printf("checksumA=%02X checksumB=%02X realCSA=%02X realCSB=%02X\n", checksumA, checksumB, frame->checksumA, frame->checksumB);
     if (checksumA == frame->checksumA && checksumB == frame->checksumB)
     {
         ret = 0;
@@ -74,29 +74,29 @@ int frameToBuffer(uint8_t *buffer, size_t *length)
 
 void get_nav_enable_mess(uint8_t *buf, size_t *size)
 {
-	setMessageStat(&ubxStorage, NAV, NAV_PVT, 1);
-	calculateChecksum(&ubxStorage);
-	frameToBuffer((uint8_t*) buf, size);
+    setMessageStat(&ubxStorage, NAV, NAV_PVT, 1);
+    calculateChecksum(&ubxStorage);
+    frameToBuffer((uint8_t*) buf, size);
 }
 
 double getLatitude(){
-	positionType *latestPosition = getLatest();
-	return latestPosition->latitude;
+    positionType *latestPosition = getLatest();
+    return latestPosition->latitude;
 }
 
 double getLongitude(){
-	positionType *latestPosition = getLatest();
-	return latestPosition->longitude;
+    positionType *latestPosition = getLatest();
+    return latestPosition->longitude;
 }
 
 void getLatestPosition(positionType *pos)
 {
-	pos = getLatest();	
+    pos = getLatest();
 }
 
 messageClassType processMessage()
 {
-    messageClassType ret = UNKNOWN; 
+    messageClassType ret = UNKNOWN;
 
     switch(ubxStorage.messageClass)
     {
@@ -104,9 +104,9 @@ messageClassType processMessage()
         processNav(&ubxStorage);
         ret = NAV;
         break;
-	case ACK:
-	ret = ACK;
-	break;
+    case ACK:
+        ret = ACK;
+        break;
     }
 
     if (ret == UNKNOWN)
@@ -119,11 +119,11 @@ messageClassType processMessage()
 
 void printBuf(uint8_t *buf)
 {
-	for (int i = 0; i < 70; i++)
-	{
-		printf("%02X", buf[i]);
-	}
-	printf("\n");
+    for (int i = 0; i < 70; i++)
+    {
+        printf("%02X", buf[i]);
+    }
+    printf("\n");
 }
 
 messageClassType process_buffer(uint8_t *buf, size_t *size)
@@ -148,22 +148,22 @@ messageClassType process_buffer(uint8_t *buf, size_t *size)
     {
         memmove(buf, &buf[bytes_used], ((*size)-bytes_used)*sizeof(uint8_t));
         memset(&buf[(*size)-bytes_used], 0, bytes_used*sizeof(uint8_t));
-	*size = *size-bytes_used;
+        *size = *size-bytes_used;
     } else
     {
         //printf("ERROR: %s buffer overflow\n", __FUNCTION__);
-	return UNKNOWN;
+        return UNKNOWN;
     }
 
     if (validateChecksum(&ubxStorage))
     {
         printf("ERROR: %s checksum failed\n", __FUNCTION__);
-	return UNKNOWN;
+        return UNKNOWN;
     }
 
 
 
-    return processMessage(); 
+    return processMessage();
 }
 
 

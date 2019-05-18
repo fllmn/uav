@@ -62,5 +62,5 @@ int setMessageStat(ubxFrame *ubxStorage, uint8_t messageClass, uint8_t messageId
 
     ret = 0;
     return ret;
-    
+
 }

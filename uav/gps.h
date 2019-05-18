@@ -5,10 +5,10 @@
 
 typedef struct gps_pvt_t
 {
-	uint16_t time_ns;
-	double latitude;
-	double longitude;
-	double altitude;
+    uint16_t time_ns;
+    double latitude;
+    double longitude;
+    double altitude;
 } gps_pvt_t;
 
 int get_latest_pvt(gps_pvt_t *latestPvt);

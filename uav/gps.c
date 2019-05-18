@@ -29,8 +29,8 @@ struct uart_conf{
 
 static void setup_uart()
 {
-	rc_pinmux_set(GPS_HEADER_PIN_3,	PINMUX_UART);
-	rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
+    rc_pinmux_set(GPS_HEADER_PIN_3,	PINMUX_UART);
+    rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
     rc_uart_init(uart_conf.bus, uart_conf.baudrate, uart_conf.timeout, uart_conf.canonical_en, uart_conf.stop_bits, uart_conf.parity_en);
     rc_uart_flush(uart_conf.bus);
 }
@@ -78,24 +78,24 @@ static void disable_nmea_message(int bus, char *message)
 
     //printf("Send_bdduf %s\n",tx_buf);
 
-    rc_uart_write(bus,(uint8_t*) tx_buf, 29);	
+    rc_uart_write(bus,(uint8_t*) tx_buf, 29);
 
 }
 
 void enable_ubx_nav()
 {
-	uint8_t tx_buf[128];
+    uint8_t tx_buf[128];
 
-	size_t mess_size = 0;
+    size_t mess_size = 0;
 
-	get_nav_enable_mess(tx_buf, &mess_size);
+    get_nav_enable_mess(tx_buf, &mess_size);
 
-	/*for (int i = 0; i < mess_size; i++)
-	{
-		printf("%02X ",tx_buf[i]);
-	}
-	printf("\n");*/
-	rc_uart_write(uart_conf.bus,  tx_buf, mess_size);
+    /*for (int i = 0; i < mess_size; i++)
+      {
+      printf("%02X ",tx_buf[i]);
+      }
+      printf("\n");*/
+    rc_uart_write(uart_conf.bus,  tx_buf, mess_size);
 
 }
 
@@ -130,35 +130,35 @@ int initialize_gps(int bus)
 
 static void push_latest()
 {
-	positionType latestPosition;
-	getLatestPosition(&latestPosition);
-	
-	gps_pvt_t element;
-	element.latitude = latestPosition.latitude;
-	element.longitude = latestPosition.latitude;
-	element.altitude = latestPosition.altitude;
+    positionType latestPosition;
+    getLatestPosition(&latestPosition);
 
-	cbuffer_put(gps_buffer, &element);
+    gps_pvt_t element;
+    element.latitude = latestPosition.latitude;
+    element.longitude = latestPosition.latitude;
+    element.altitude = latestPosition.altitude;
+
+    cbuffer_put(gps_buffer, &element);
 }
 
 int get_latest_pvt(gps_pvt_t *latestPvt)
 {
-	if (gps_buffer != NULL)
-	{
-	if (cbuffer_top(gps_buffer, latestPvt))
-	{
-		printf("ERROR: Failed to peek buffer\n");
-		return -1;
-	}
-	}
+    if (gps_buffer != NULL)
+    {
+        if (cbuffer_top(gps_buffer, latestPvt))
+        {
+            printf("ERROR: Failed to peek buffer\n");
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 int gps_main(int bus)
 {
-	gps_buffer = create_cbuffer();
-	cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t));
+    gps_buffer = create_cbuffer();
+    cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t));
 
     if (initialize_gps(bus) == -1)
     {
@@ -169,29 +169,29 @@ int gps_main(int bus)
     size_t rem_data = 0;
     while(rc_get_state() != EXITING)
     {
-	size_t bytes_avail = rc_uart_bytes_available(uart_conf.bus);
-	size_t bytes_read = 0;
+        size_t bytes_avail = rc_uart_bytes_available(uart_conf.bus);
+        size_t bytes_read = 0;
         while (bytes_avail > 1)
         {
 
-		bytes_read = (bytes_avail > READ_SIZE) ? READ_SIZE : bytes_avail;
+            bytes_read = (bytes_avail > READ_SIZE) ? READ_SIZE : bytes_avail;
             rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], bytes_read-1);
             rem_data = rem_data + bytes_read-1;
-	bytes_avail =- bytes_read-1;
+            bytes_avail =- bytes_read-1;
             switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
             {
             case NAV:
                 printf("Latitude %f deg, Longitude %f deg\n", getLatitude(), getLongitude());
-		push_latest();
+                push_latest();
                 break;
             case UNKNOWN:
                 //printf("Got UNKNOWN package\n");
                 break;
-		default:
-		break;
+            default:
+                break;
             }
         }
-	rc_usleep(10000);
+        rc_usleep(10000);
     }
 
     return 0;
@@ -200,11 +200,11 @@ int gps_main(int bus)
 
 void *gps_thread_func()
 {
-  gps_thread_ret_val = gps_main(2);
-  if (gps_thread_ret_val == -1)
+    gps_thread_ret_val = gps_main(2);
+    if (gps_thread_ret_val == -1)
     {
-      rc_set_state(EXITING);
+        rc_set_state(EXITING);
     }
 
-  return (void*)&gps_thread_ret_val;
+    return (void*)&gps_thread_ret_val;
 }

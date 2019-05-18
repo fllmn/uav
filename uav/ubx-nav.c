@@ -9,17 +9,17 @@
 positionType navPosition;
 
 /*static double llh2EcefX(int32_t latitude, int32_t longitude, int32_t height)
-{
-    return (double) latitude + longitude + height;
-}
-static double llh2EcefY(int32_t latitude, int32_t longitude, int32_t height)
-{
-    return (double) latitude + longitude + height;
-}
-static double llh2EcefZ(int32_t latitude, int32_t longitude, int32_t height)
-{
-    return (double) latitude + longitude + height;
-}*/
+  {
+  return (double) latitude + longitude + height;
+  }
+  static double llh2EcefY(int32_t latitude, int32_t longitude, int32_t height)
+  {
+  return (double) latitude + longitude + height;
+  }
+  static double llh2EcefZ(int32_t latitude, int32_t longitude, int32_t height)
+  {
+  return (double) latitude + longitude + height;
+  }*/
 
 static int processEcef(ubxFrame *ubxStorage)
 {
@@ -48,23 +48,23 @@ static int processLlh(ubxFrame *ubxStorage)
 }
 
 static int processPvt(ubxFrame *ubxStorage){
-	int ret = -1;
-	pvtFrame pvt;
+    int ret = -1;
+    pvtFrame pvt;
 
-	memcpy(&pvt, &ubxStorage->messagePayload, ubxStorage->messageLength);
-    	navPosition.latitude = pvt.latitude * DEGSCALING2RAD;
-    	navPosition.longitude = pvt.longitude * DEGSCALING2RAD;
-    	navPosition.altitude = pvt.height * MM2M;
-    	navPosition.timeOfWeek = pvt.timeOfWeek;
+    memcpy(&pvt, &ubxStorage->messagePayload, ubxStorage->messageLength);
+    navPosition.latitude = pvt.latitude * DEGSCALING2RAD;
+    navPosition.longitude = pvt.longitude * DEGSCALING2RAD;
+    navPosition.altitude = pvt.height * MM2M;
+    navPosition.timeOfWeek = pvt.timeOfWeek;
 
-	ret = 0;
+    ret = 0;
 
-	return ret;
+    return ret;
 }
 
 positionType* getLatest()
 {
-	return &navPosition;
+    return &navPosition;
 }
 
 int processNav(ubxFrame *ubxStorage)
@@ -73,21 +73,21 @@ int processNav(ubxFrame *ubxStorage)
 
     switch (ubxStorage->messageId)
     {
-    //case NAV_STATUS ... NAV_EOE:
+        //case NAV_STATUS ... NAV_EOE:
         // Not impelemted
-      //  break;
+        //  break;
     case NAV_POSECEF:
         processEcef(ubxStorage);
         break;
     case NAV_POSLLH:
         processLlh(ubxStorage);
         break;
-	case NAV_PVT:
-	processPvt(ubxStorage);
-	break;
-    //default:
+    case NAV_PVT:
+        processPvt(ubxStorage);
+        break;
+        //default:
         // Raise error
-        
+
     }
     return ret;
 }
