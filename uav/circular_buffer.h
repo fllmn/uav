@@ -1,3 +1,6 @@
+#ifndef CIRCULAR_BUFFER_H
+#define CIRCULAR_BUFFER_H
+
 #include "stdlib.h"
 #include <stdbool.h>
 typedef struct cbuffer_t cbuffer_t;
@@ -62,3 +65,5 @@ size_t cbuffer_size(cbuffer_handle_t);
 void cbuffer_enable_print_outs(cbuffer_handle_t);
 
 void cbuffer_disable_print_outs(cbuffer_handle_t);
+
+#endif //CIRCULAR_BUFFER_H

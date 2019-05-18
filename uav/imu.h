@@ -1,3 +1,6 @@
+#ifndef IMU_H
+#define IMU_H
+
 #include <robotcontrol.h>
 //int get_oldest_mpu_data(rc_mpu_data_t*);
 
@@ -17,3 +20,5 @@ int finalize_imu();
 int log_imu();
 int get_latest_imu(imu_entry_t *imu);
 void sample_imu();
+
+#endif //IMU_H
