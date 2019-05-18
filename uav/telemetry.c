@@ -18,7 +18,7 @@ static int initTelemetry()
     rc_pinmux_set(UART1_HEADER_PIN_3, PINMUX_UART);
     rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
 
-    if (rc_uart_init(bus, 57600, 0,5 0, 1, 0))
+    if (rc_uart_init(bus, 57600, 0.5, 0, 1, 0))
     {
         printf("ERROR: failed to initialize uart\n");
         return -1;
