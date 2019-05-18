@@ -3,12 +3,13 @@
 #include "gps.h"
 #include "i2c_thread.h"
 #include "dsm_thread.h"
+#include "telemetry.h"
 
 // threads
 static pthread_t i2c_thread;
 static pthread_t dsm_thread;
 static pthread_t gps_thread;
-
+static pthread_t telemetry_thread;
 
 
 
@@ -87,11 +88,17 @@ int main()
     fprintf(stderr, "ERROR: Failed to start DSM thread\n");
     return -1;
   } 
-
+*/
   if(rc_pthread_create(&gps_thread, gps_thread_func, NULL, SCHED_OTHER, 0)){
     fprintf(stderr, "ERROR: Failed to start GPS thread\n");
     return -1;
-  } 
+  }
+
+  if(rc_pthread_create(&telemetry_thread, telemetry_thread_func, NULL, SCHED_OTHER, 0)){
+    fprintf(stderr, "ERROR: Failed to start TELEMERTY thread\n");
+    return -1;
+  }
+
   //gps_main(1);
   // Sleep and let threads work
   while(rc_get_state()==RUNNING){
@@ -118,6 +125,13 @@ int main()
     fprintf(stderr,"ERROR: GPS thread timed out\n");
   }
   printf("GPS thread returned:%d\n",*(int*)thread_retval);
+
+
+  ret = rc_pthread_timed_join(telemetry_thread, &thread_retval, 1.5);
+  if ( ret == 1){
+    fprintf(stderr,"ERROR: TELEMETRY thread timed out\n");
+  }
+  printf("TELEMETRY thread returned:%d\n",*(int*)thread_retval);
 
   // turn off LEDs and close file descriptors
   rc_led_set(RC_LED_GREEN, 0);

@@ -62,7 +62,7 @@ static int processPvt(ubxFrame *ubxStorage){
 	return ret;
 }
 
-positionType* getLatestPosition()
+positionType* getLatest()
 {
 	return &navPosition;
 }

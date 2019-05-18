@@ -76,6 +76,6 @@ typedef struct __attribute__((__packed__))
 } pvtFrame;
 
 int processNav(ubxFrame *ubxStorage);
-positionType* getLatestPosition();
+positionType* getLatest();
 void getEcefPosition(positionType *latestPos);
 #endif //UBX_NAV_H
