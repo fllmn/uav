@@ -80,13 +80,18 @@ void get_nav_enable_mess(uint8_t *buf, size_t *size)
 }
 
 double getLatitude(){
-	positionType *latestPosition = getLatestPosition();
+	positionType *latestPosition = getLatest();
 	return latestPosition->latitude;
 }
 
 double getLongitude(){
-	positionType *latestPosition = getLatestPosition();
+	positionType *latestPosition = getLatest();
 	return latestPosition->longitude;
+}
+
+void getLatestPosition(positionType *pos)
+{
+	pos = getLatest();	
 }
 
 messageClassType processMessage()

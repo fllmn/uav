@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <robotcontrol.h>
+#include "gps.h"
 #include "ubx.h"
+#include "circular_buffer.h"
 
 #define BAUDRATE 9600
 #define TIMEOUT 0.5
@@ -10,8 +12,10 @@
 #define READ_SIZE 96
 
 static int gps_thread_ret_val;
-#define GPS_BUFFER_SIZR 100;
+#define GPS_BUFFER_SIZE 30
 unsigned int gps_buffer_idx = 0;
+
+cbuffer_handle_t gps_buffer;
 
 struct uart_conf{
     int bus;
@@ -124,10 +128,36 @@ int initialize_gps(int bus)
     return 0;
 }
 
+static void push_latest()
+{
+	positionType latestPosition;
+	getLatestPosition(&latestPosition);
+	
+	gps_pvt_t element;
+	element.latitude = latestPosition.latitude;
+	element.longitude = latestPosition.latitude;
+	element.altitude = latestPosition.altitude;
 
+	cbuffer_put(gps_buffer, &element);
+}
+
+int get_latest_pvt(gps_pvt_t *latestPvt)
+{
+	if (cbuffer_top(gps_buffer, latestPvt))
+	{
+		printf("ERROR: Failed to peek buffer");
+		return -1;
+	}
+	
+
+	return 0;
+}
 
 int gps_main(int bus)
 {
+	gps_buffer = create_cbuffer();
+	cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t));
+
     if (initialize_gps(bus) == -1)
     {
         printf("ERROR: failed to initialize uart\n");
@@ -137,21 +167,25 @@ int gps_main(int bus)
     size_t rem_data = 0;
     while(rc_get_state() != EXITING)
     {
-        while (rc_uart_bytes_available(uart_conf.bus) > READ_SIZE)
+	size_t bytes_avail = rc_uart_bytes_available(uart_conf.bus);
+	size_t bytes_read = 0;
+        while (bytes_avail > 1)
         {
 
-            rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], READ_SIZE-1);
-            rem_data = rem_data + READ_SIZE-1;
-
+		bytes_read = (bytes_avail > READ_SIZE) ? READ_SIZE : bytes_avail;
+            rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], bytes_read-1);
+            rem_data = rem_data + bytes_read-1;
+	bytes_avail =- bytes_read-1;
             switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
             {
             case NAV:
                 printf("Latitude %f deg, Longitude %f deg\n", getLatitude(), getLongitude());
+		push_latest();
                 break;
             case UNKNOWN:
                 //printf("Got UNKNOWN package\n");
                 break;
-default:
+		default:
 		break;
             }
         }
@@ -164,7 +198,7 @@ default:
 
 void *gps_thread_func()
 {
-  gps_thread_ret_val = gps_main(1);
+  gps_thread_ret_val = gps_main(2);
   if (gps_thread_ret_val == -1)
     {
       rc_set_state(EXITING);

@@ -4,13 +4,14 @@
 #include "i2c_thread.h"
 #include "dsm_thread.h"
 #include "log_thread.h"
+#include "telemetry.h"
 
 // threads
 static pthread_t i2c_thread;
 static pthread_t dsm_thread;
 static pthread_t gps_thread;
 static pthread_t log_thread;
-
+static pthread_t telemetry_thread;
 
 
 /**
@@ -100,6 +101,11 @@ int main()
     return -1;
   } 
    
+  if(rc_pthread_create(&telemetry_thread, telemetry_thread_func, NULL, SCHED_OTHER, 0)){
+    fprintf(stderr, "ERROR: Failed to start LOG thread\n");
+    return -1;
+  } 
+   
   
   // Sleep and let threads work
   while(rc_get_state()==RUNNING){
@@ -133,6 +139,13 @@ int main()
 		fprintf(stderr,"ERROR: LOG thread timed out\n");
 	}
 	printf("LOG thread returned:%d\n",*(int*)thread_retval);
+ 
+        // join telemetry thread
+	ret = rc_pthread_timed_join(telemetry_thread, &thread_retval, 1.5);
+	if ( ret == 1){
+		fprintf(stderr,"ERROR: LOG thread timed out\n");
+	}
+	printf("TELEMETRY thread returned:%d\n",*(int*)thread_retval);
   
   
   
