@@ -3,16 +3,6 @@
 #include "circular_buffer.h"
 #define IMU_BUFFER_SIZE   10
 
-// a wraper struct of  rc_mpu_data_t with the extra time field
-typedef struct imu_entry_t {
-  	uint64_t time_ns;
-	double accel[3];
-	double gyro[3];
-	double mag[3];
-	double temp;
-	double euler[3];
-} imu_entry_t;
-
 
 rc_mpu_config_t mpu_config; 
 rc_mpu_data_t  	mpu_data; // Declare a Motion processing data structure, this is used to receive data from imu interrupt
@@ -137,4 +127,15 @@ int log_imu(){
 	
 }
 
-
+int get_latest_imu(imu_entry_t *imu)
+{
+	if (imu_buffer != NULL)
+	{
+	if (cbuffer_top(imu_buffer, imu))
+	{
+		printf("ERROR: failed to peek buffer\n");
+		return -1;
+	}
+	}
+	return 0;
+}

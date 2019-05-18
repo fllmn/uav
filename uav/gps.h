@@ -1,8 +1,11 @@
 #ifndef GPS_H
 #define GPS_H
 
+#include <stdint.h>
+
 typedef struct gps_pvt_t
 {
+	uint16_t time_ns;
 	double latitude;
 	double longitude;
 	double altitude;

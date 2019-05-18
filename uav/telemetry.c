@@ -1,38 +1,30 @@
 #include <stdio.h>
 #include <robotcontrol.h>
-//#include <rc/mavlink_uart.h>
 #include "circular_buffer.h"
 #include "gps.h"
+#include "baro.h"
+#include "imu.h"
 #include "telemetry.h"
 
 static int telemetry_thread_ret_val;
 static int bus;
-static gps_pvt_t latest;
-static char print_buf[128];
-
-static void __callback_func_any()
-{
-	int sysid = rc_mav_get_sys_id_of_last_msg_any();
-	int msg_id = rc_mav_msg_id_of_last_msg();
-	
-	printf("Message from sysid %d, message %d\n", sysid, msg_id);
-
-}
+static gps_pvt_t latest_pvt;
+static bmp_entry_t latest_baro;
+static imu_entry_t latest_imu;
+static char print_buf[1024];
 
 static int initTelemetry()
 {
-	rc_pinmux_set(GPS_HEADER_PIN_3, PINMUX_UART);
-	rc_pinmux_set(GPS_HEADER_PIN_4, PINMUX_UART);
+	rc_pinmux_set(UART1_HEADER_PIN_3, PINMUX_UART);
+	rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
 
-	//if (rc_uart_init(bus, 57600, 0.5, 0, 1, 0))
-/*	if (rc_mav_uart_init(1, bus, 500000))
+	if (rc_mav_uart_init(1, bus, 500000))
 	{
 		printf("ERROR: failed to initialize uart\n");
 		return -1;
 	}
 
-	rc_mav_set_callback_all(__callback_func_any);
-*/	rc_uart_flush(bus);
+	rc_uart_flush(bus);
 
 	return 0;
 }
@@ -46,30 +38,37 @@ int telemetry_main(int uart_bus)
 	}
 
 	size_t bytes = sprintf(print_buf, "Time \t\tLat \t\tLong \t\tAlt \n");
-	printf("%s", print_buf);
-	rc_uart_write(bus,(uint8_t*) print_buf, bytes);
-	
 
 	while (rc_get_state() != EXITING)
 	{
-		if (get_latest_pvt(&latest))
+		if (get_latest_pvt(&latest_pvt))
 		{
 			printf("ERROR: Faild to get gps data\n");
 		}
 
-/*		if (get_latest_dsm(&latest))
+		if (get_latest_baro(&latest_baro))
 		{
-			printf("ERROR: Faild to get gps data\n");
+			printf("ERROR: Faild to get baro data\n");
 		}
-		
-		if (get_latest_mpu(&latest))
+
+		if (get_latest_imu(&latest_imu))
 		{
-			printf("ERROR: Faild to get gps data\n");
+			printf("ERROR: Faild to get imu data\n");
 		}
-*/		
-		size_t bytes = sprintf(print_buf, "%f\t%f\t%f\t%f\n",0.0,latest.latitude, latest.longitude, latest.altitude);
+
+		size_t bytes = sprintf(print_buf, "%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f\n",
+		latest_imu.accel[0], latest_imu.accel[1], latest_imu.accel[2],
+		latest_imu.gyro[0], latest_imu.gyro[1], latest_imu.gyro[2],
+		latest_imu.mag[0], latest_imu.mag[1], latest_imu.mag[2],
+		latest_imu.temp,
+		latest_imu.euler[0], latest_imu.euler[1], latest_imu.euler[2],
+		latest_baro.bmp_data.temp_c,
+		latest_baro.bmp_data.alt_m,
+		latest_baro.bmp_data.pressure_pa,
+		latest_pvt.latitude,
+		latest_pvt.longitude,
+		latest_pvt.altitude);
 		rc_uart_write(bus,(uint8_t*) print_buf, bytes);
-		printf("%s", print_buf);
 		rc_usleep(1000000);
 	}
 

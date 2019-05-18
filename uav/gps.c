@@ -143,12 +143,14 @@ static void push_latest()
 
 int get_latest_pvt(gps_pvt_t *latestPvt)
 {
+	if (gps_buffer != NULL)
+	{
 	if (cbuffer_top(gps_buffer, latestPvt))
 	{
-		printf("ERROR: Failed to peek buffer");
+		printf("ERROR: Failed to peek buffer\n");
 		return -1;
 	}
-	
+	}
 
 	return 0;
 }

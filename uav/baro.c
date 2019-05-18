@@ -6,11 +6,6 @@
 
 cbuffer_handle_t bmp_buffer; //Declare a cbuffer
 
-typedef struct bmp_entry {
-  	uint64_t time_ns;
-	rc_bmp_data_t bmp_data;
-} bmp_entry_t; // wraper for bmp type from rc_lib beacuse we need the timestamp
-
 bmp_entry_t bmp_entry;
 
 FILE *baro_log;
@@ -82,6 +77,19 @@ int finalize_baro(){
 	int r2  = cbuffer_free(bmp_buffer);
 	close_baro_log();
 	if (r1||r2) return -1;
+	return 0;
+}
+
+int get_latest_baro(bmp_entry_t *baro)
+{
+	if(bmp_buffer != NULL)
+	{
+	if(cbuffer_top(bmp_buffer, baro))
+	{
+		printf("ERROR: Failed to peek bruffer");
+		return -1;
+	}
+	}
 	return 0;
 }
 

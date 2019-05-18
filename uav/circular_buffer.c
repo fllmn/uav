@@ -172,6 +172,7 @@ int cbuffer_get(cbuffer_handle_t cbuf, void * out_data)
 
 int cbuffer_try_get(cbuffer_handle_t cbuf, void * out_data)
 {
+	if (cbuf == NULL) return -1;
 
 	if(!cbuffer_empty(cbuf))
     {
