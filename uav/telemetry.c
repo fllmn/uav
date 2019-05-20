@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <robotcontrol.h>
+#include "sys_log.h"
 #include "circular_buffer.h"
 #include "gps.h"
 #include "baro.h"
@@ -20,7 +21,7 @@ static int initTelemetry()
 
     if (rc_uart_init(bus, 57600, 0.5, 0, 1, 0))
     {
-        printf("ERROR: failed to initialize uart\n");
+        LOG_E(" Failed to initialize uart");
         return -1;
     }
 
@@ -34,8 +35,10 @@ int telemetry_main(int uart_bus)
     bus = uart_bus;
     if (initTelemetry())
     {
-        printf("ERROR: Failed to inittialize telemtry\n");
+        LOG_E("Failed to inittialize telemtry");
     }
+
+    LOG_I("Initilized telemtry thread");
 
     size_t bytes = sprintf(print_buf, "Time \t\tLat \t\tLong \t\tAlt \n");
 
@@ -43,17 +46,17 @@ int telemetry_main(int uart_bus)
     {
         if (get_latest_pvt(&latest_pvt))
         {
-            printf("ERROR: Faild to get gps data\n");
+            LOG_E("Failed to get gps data");
         }
 
         if (get_latest_baro(&latest_baro))
         {
-            printf("ERROR: Faild to get baro data\n");
+            LOG_E("Failed to get baro data");
         }
 
         if (get_latest_imu(&latest_imu))
         {
-            printf("ERROR: Faild to get imu data\n");
+            LOG_E("Failed to get imu data");
         }
 
         size_t bytes = sprintf(print_buf, "%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f\n",
