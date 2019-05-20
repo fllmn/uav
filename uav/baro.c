@@ -11,7 +11,7 @@ bmp_entry_t bmp_entry;
 FILE *baro_log;
 
 
-int init_baro_log()
+static int init_baro_log()
 {
     // add flag for enable and disable logging?
     baro_log = fopen("baro.log","w");
@@ -25,9 +25,12 @@ int init_baro_log()
     return 0;
 }
 
-int close_baro_log()
+static int close_baro_log()
 {
     // add flag for enable and disable logging?
+    if(baro_log == NULL){
+      return -1;
+    }
     fclose(baro_log);
     return 0;
 }
