@@ -5,7 +5,7 @@
 
 static volatile LOG_LEVEL log_level=31;
 FILE *sys_log;
-pthread_mutext_t lock; 
+pthread_mutex_t lock;
 
 int set_log_level(LOG_LEVEL level)
 {
@@ -22,7 +22,7 @@ int init_file_log()
     if(sys_log == NULL)
     {
         LOG_E("Could not open an SYS log file!\n");
-        return -1;             
+        return -1;
     }
 
     return 0;
@@ -30,108 +30,24 @@ int init_file_log()
 
 int LOG(LOG_LEVEL level, const char *fmt, ...)
 {
-    pthread_mutex_lock(&lock);
     if (level & log_level)
     {
         va_list args;
         va_start(args, fmt);
+
+        pthread_mutex_lock(&lock);
         printf(fmt, args);
 
         if (sys_log != NULL)
         {
             fprintf(sys_log, fmt, args);
         }
+        pthread_mutex_unlock(&lock);
 
         va_end(args);
     }
-    pthread_mutex_unlock(&lock);
-
-    return 0;
-}
-
-int LOG_I(const char *fmt, ...)
-{
-    pthread_mutex_lock(&lock);
-    if (log_level & LOG_INFO)
-    {
-        va_list args;
-        va_start(args, fmt);
-        printf(fmt, args);
-
-        if (sys_log != NULL)
-        {
-            fprintf(sys_log, fmt, args);
-        }
-
-        va_end(args);
-    }
-    pthread_mutex_unlock(&lock);
 
     return 0;
 }
 
 
-int LOG_W(const char *fmt, ...)
-{
-    pthread_mutex_lock(&lock);
-    if (log_level & LOG_WARN)
-    {
-        va_list args;
-        va_start(args, fmt);
-        printf(fmt, args);
-
-        if (sys_log != NULL)
-        {
-            fprintf(sys_log, fmt, args);
-        }
-
-        va_end(args);
-    }
-    pthread_mutex_unlock(&lock);
-
-    return 0;
-}
-
-
-int LOG_E(const char *fmt, ...)
-{
-    pthread_mutex_lock(&lock);
-    if (log_level & LOG_ERROR)
-    {
-        va_list args;
-        va_start(args, fmt);
-        printf(fmt, args);
-
-        if (sys_log != NULL)
-        {
-            fprintf(sys_log, fmt, args);
-        }
-
-        va_end(args);
-    }
-    pthread_mutex_unlock(&lock);
-
-    return 0;
-}
-
-
-int LOG_C(const char *fmt, ...)
-{
-    pthread_mutex_lock(&lock);
-    if (log_level & LOG_CRITICAL)
-    {
-        va_list args;
-        va_start(args, fmt);
-        printf(fmt, args);
-
-        if (sys_log != NULL)
-        {
-            fprintf(sys_log, fmt, args);
-        }
-
-        va_end(args);
-    }
-    pthread_mutex_unlock(&lock);
-
-    return 0;
-}

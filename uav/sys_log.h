@@ -1,6 +1,11 @@
 #ifndef SYS_LOG_H
 #define SYS_LOG_H
 
+#define LOG_I(...) LOG((LOG_INFO), __VA_ARGS__)
+#define LOG_W(...) LOG((LOG_WARN), __VA_ARGS__)
+#define LOG_E(...) LOG((LOG_ERROR), __VA_ARGS__)
+#define LOG_C(...) LOG((LOG_CRITICAL), __VA_ARGS__)
+
 typedef enum LOG_LEVEL
 {
     LOG_OFF = 0,
@@ -14,9 +19,5 @@ int init_file_log(void);
 int set_log_level(LOG_LEVEL level);
 
 int LOG(LOG_LEVEL level,const char *fmt, ...);
-int LOG_I(const char *fmt, ...);
-int LOG_W(const char *fmt, ...);
-int LOG_E(const char *fmt, ...);
-int LOG_C(const char *fmt, ...);
 
 #endif //SYS_LOG_H
