@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <robotcontrol.h>
+#include "sys_log.h"
 #include "gps.h"
 #include "ubx.h"
 #include "circular_buffer.h"
@@ -16,6 +17,7 @@ static int gps_thread_ret_val;
 unsigned int gps_buffer_idx = 0;
 
 cbuffer_handle_t gps_buffer;
+static FILE *gps_log;
 
 struct uart_conf{
     int bus;
@@ -26,6 +28,25 @@ struct uart_conf{
     int parity_en;
     char buf[512];
 } uart_conf;
+
+static int init_gps_log()
+{
+	gps_log = fopen("gps.log", "w");
+	if (gps_log == NULL)
+	{
+		LOG_E("Could not open an GPS LOG file!");
+		return -1;
+	}
+
+	fprintf(gps_log, "time \tlat \tlon \taltitude\n");
+	return 0;
+}
+
+static int close_gps_log()
+{
+	fclose(gps_log);
+	return 0;
+}
 
 static void setup_uart()
 {
@@ -101,6 +122,8 @@ void enable_ubx_nav()
 
 int initialize_gps(int bus)
 {
+	if (init_gps_log()) return -1;
+
     if (!(bus==1||bus==2))
     {
         printf("ERROR: illegal bus number\n");
@@ -126,6 +149,38 @@ int initialize_gps(int bus)
     enable_ubx_nav();
 
     return 0;
+}
+
+int finalize_gps()
+{
+	int r1 = rc_uart_close(uart_conf.bus);
+	int r2 = close_gps_log();
+
+	return (r1|r2);
+}
+
+void log_gps()
+{
+	if (gps_log == NULL)
+	{
+		LOG_E("Tried to write to uninitialized gps log file");
+		return;
+	}
+
+	gps_pvt_t d;
+	if (cbuffer_try_get(gps_buffer, &d))
+	{
+		LOG_W("GPS log is empty");
+		return;
+	}
+
+	fprintf(gps_log, "%d, %f, %f, %f\n",
+	0,
+	d.latitude,
+	d.longitude,
+	d.altitude);
+
+	return;
 }
 
 static void push_latest()

@@ -12,6 +12,7 @@ typedef struct gps_pvt_t
 } gps_pvt_t;
 
 int get_latest_pvt(gps_pvt_t *latestPvt);
+void log_gps(void);
 void *gps_thread_func();
 
 #endif //GPS_H

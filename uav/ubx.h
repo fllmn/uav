@@ -18,7 +18,7 @@ typedef enum __attribute__((__packed__)) messageClassType
     TIM = 0x0D,
     ESF = 0x10,
     MGA = 0x13,
-    LOG = 0x21,
+    UBX_LOG = 0x21,
     SEC = 0x27,
     HNR = 0x28
 } messageClassType;
