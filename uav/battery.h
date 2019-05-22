@@ -11,5 +11,5 @@ int finalize_battery_monitor();
 int sample_battery_voltage();
 int log_battery();
 int get_oldest_battery_data();
-int battery_main();
+void* battery_thread_func();
 #endif //BATTERY_H

@@ -6,6 +6,7 @@
 #define BATTERY_SAMPLE_RATE 1000000
 
 static FILE * battery_log;
+static int battery_thread_ret_val;
 cbuffer_handle_t battery_buffer;
 bat_entry_t bat_entry;
 
@@ -108,13 +109,13 @@ int battery_main(){
 }
 
 
-/* void* i2c_thread_func() // wrapper function for the i2c main which casts the retval to void* */
-/* { */
-/*     i2c_thread_ret_val = i2c_main(); */
-/*     if (i2c_thread_ret_val) */
-/*     { */
-/*         rc_set_state(EXITING); // ism this needed? OBS */
-/*     } */
-/*     return (void*)&i2c_thread_ret_val; */
-/* } */
+void* battery_thread_func() // wrapper function for the battery main which casts the retval to void*
+{
+   battery_thread_ret_val = battery_main();
+    if (battery_thread_ret_val)
+    {
+        rc_set_state(EXITING); // ism this needed? OBS
+    }
+    return (void*)&battery_thread_ret_val;
+}
 

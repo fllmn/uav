@@ -5,12 +5,14 @@
 #include "dsm_thread.h"
 #include "log_thread.h"
 #include "telemetry.h"
+#include "battery.h"
 
 // threads
 static pthread_t i2c_thread;
 static pthread_t dsm_thread;
 static pthread_t gps_thread;
 static pthread_t log_thread;
+static pthread_t battery_thread;
 static pthread_t telemetry_thread;
 
 
@@ -96,6 +98,11 @@ int main()
         return -1;
     }
 
+    if(rc_pthread_create(&battery_thread, battery_thread_func, NULL, SCHED_OTHER, 0)){
+        fprintf(stderr, "ERROR: Failed to start Battery monitor thread\n");
+        return -1;
+    }
+    
     if(rc_pthread_create(&log_thread, log_thread_func, NULL, SCHED_OTHER, 0)){
         fprintf(stderr, "ERROR: Failed to start LOG thread\n");
         return -1;
@@ -133,6 +140,13 @@ int main()
     }
     printf("GPS thread returned:%d\n",*(int*)thread_retval);
 
+    // join battery thread
+    ret = rc_pthread_timed_join(battery_thread, &thread_retval, 1.5);
+    if ( ret == 1){
+        fprintf(stderr,"ERROR: Battery monitor thread timed out\n");
+    }
+    printf("Battery monitor thread returned:%d\n",*(int*)thread_retval);
+    
     // join log thread
     ret = rc_pthread_timed_join(log_thread, &thread_retval, 1.5);
     if ( ret == 1){
