@@ -13,7 +13,7 @@ typedef struct airspeed_t
     uint32_t temperature_raw;
 } airspeed_t;
 
-int get_latest_airspeed(airspeed_t latest);
+int get_latest_airspeed(airspeed_t *latest);
 void log_airspeed(void);
 void *airspeed_thread_func();
 

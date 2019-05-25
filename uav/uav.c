@@ -6,6 +6,7 @@
 #include "log_thread.h"
 #include "telemetry.h"
 #include "battery.h"
+#include "airspeed.h"
 
 // threads
 static pthread_t i2c_thread;
@@ -14,7 +15,7 @@ static pthread_t gps_thread;
 static pthread_t log_thread;
 static pthread_t battery_thread;
 static pthread_t telemetry_thread;
-
+static pthread_t airspeed_thread;
 
 /**
  * Make the Pause button toggle between paused and running states.
@@ -113,6 +114,11 @@ int main()
         return -1;
     }
 
+    if(rc_pthread_create(&airspeed_thread, airspeed_thread_func, NULL, SCHED_OTHER, 0)){
+        fprintf(stderr, "ERROR: Failed to start AIRSPEED thread\n");
+        return -1;
+    }
+
 
     // Sleep and let threads work
     while(rc_get_state()==RUNNING){
@@ -158,6 +164,13 @@ int main()
     ret = rc_pthread_timed_join(telemetry_thread, &thread_retval, 1.5);
     if ( ret == 1){
         fprintf(stderr,"ERROR: LOG thread timed out\n");
+    }
+    printf("TELEMETRY thread returned:%d\n",*(int*)thread_retval);
+
+    // join airspeed thread
+    ret = rc_pthread_timed_join(airspeed_thread, &thread_retval, 1.5);
+    if ( ret == 1){
+        fprintf(stderr,"ERROR: AIRSPEED thread timed out\n");
     }
     printf("TELEMETRY thread returned:%d\n",*(int*)thread_retval);
 
