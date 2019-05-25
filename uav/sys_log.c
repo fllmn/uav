@@ -55,13 +55,13 @@ int LOG(LOG_LEVEL level, const char *fmt, ...)
 			break;
 	}
 	printf("%s: ", name);
-        printf(fmt, args);
+        vprintf(fmt, args);
 	printf("\n");
 
         if (sys_log_fp != NULL)
         {
 		fprintf(sys_log_fp, "%s: ", name);
-            fprintf(sys_log_fp, fmt, args);
+            vfprintf(sys_log_fp, fmt, args);
 		fprintf(sys_log_fp, "\n");
         }
         pthread_mutex_unlock(&lock);
