@@ -72,6 +72,46 @@ static uint64_t time_since_start(uint64_t time)
     }*/
 }
 
+int log_airspeed()
+{
+    if (airspeed_log == NULL)
+    {
+        LOG_E("Tried to write to uninitilized log file");
+        return;
+    }
+
+    airspeed_t d;
+    if (cbuffer_try_get(airspeed_buffer, &d))
+    {
+        LOG_W("LOG not available");
+    }
+    else
+    {
+        fprintf(airspeed_log, "%lld, %f, %f, %f, %d, %d\n",
+                d.time,
+                d.airspeed,
+                d.pressure,
+                d.tempwerature,
+                d.pressure_raw,
+                d.temperature_raw);
+    }
+    return 0;
+}
+
+int get_latest_airspeed(airspeed_t *latest)
+{
+    if (airspeed_buffer != NULL)
+    {
+        if (cbuffer_top(airspeed_buffer, latest))
+        {
+            LOG_E("Failed to peek buffer");
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 int airspeed_main()
 {
     if (initilize_airspeed())
@@ -79,7 +119,7 @@ int airspeed_main()
         LOG_C("Failed to initilize airspeed sensor");
     }
 
-    
+
     init_airspeed_log();
     uint32_t D1;
     uint32_t D2;
@@ -90,7 +130,7 @@ int airspeed_main()
     {
         D1 = get_conversion(MS_PRESSURE_4096);
         D2 = get_conversion(MS_TEMPERTURE_4096);
-        
+
         convert(D1, D2, &pressure, &temperature);
         if (time_since_start(init_time) < 1000000000)
         {
@@ -106,7 +146,7 @@ int airspeed_main()
             }
 
             airspeed = 0;
-                
+
         }
         else
         {
@@ -121,6 +161,10 @@ int airspeed_main()
         d.temperture = termperture;
         d.pressure_raw = D1;
         d.temperture_raw = D2;
+
+        cbuffer_put(airspeed_buffer, &d);
+
+        rc_usleep(200000);
 
     }
 
