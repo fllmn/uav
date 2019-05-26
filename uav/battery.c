@@ -88,7 +88,7 @@ int log_battery(){
     }
 
 
-    fprintf(battery_log,"%llu, %f;\n",
+    fprintf(battery_log,"%lu, %f;\n",
             d.time_ns,
             d.voltage
             );

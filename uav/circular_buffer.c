@@ -104,7 +104,7 @@ size_t cbuffer_size(cbuffer_handle_t cbuf)
             size = (cbuf->max_elements + cbuf->write_pos - cbuf->read_pos);
         }
     }
-    if(cbuf->print) printf("Query of size. Size is %d\n",size);
+    if(cbuf->print) printf("Query of size. Size is %ld\n",size);
     return size;
 }
 
@@ -141,7 +141,7 @@ int cbuffer_put(cbuffer_handle_t cbuf, void * in_data)
     if(cbuf->print) printf("Put-rutine got lock\n");
 
     memcpy_offset_dest(cbuf->buffer,in_data, cbuf->element_size * cbuf->write_pos, cbuf->element_size);
-    if(cbuf->print) printf("Put data at pos %d\n",cbuf->write_pos );
+    if(cbuf->print) printf("Put data at pos %ld\n",cbuf->write_pos );
 
     advance_pointer(cbuf);
 

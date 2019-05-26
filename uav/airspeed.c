@@ -111,19 +111,6 @@ static int initilize_airspeed()
     return 0;
 }
 
-static uint64_t time_since_start()
-{
-    uint64_t delta_time = rc_nanos_since_boot() - init_time;
-    LOG_I("rc_nanos %llu, init_time %llu", rc_nanos_since_boot(), init_time);
-
-  /*  if (delta_time < 0)
-    {
-        
-    }*/
-
-    return (uint64_t) delta_time;
-}
-
 static int convert(uint32_t D1, uint32_t D2, double *pressure, double * temperature)
 {
 	const uint8_t Q1 = 15;
@@ -131,7 +118,7 @@ static int convert(uint32_t D1, uint32_t D2, double *pressure, double * temperat
 	const uint8_t Q3 = 7;
 	const uint8_t Q4 = 5;
 	const uint8_t Q5 = 7;
-	const uint8_t Q6 = 21;
+	//const uint8_t Q6 = 21;
 
 	int64_t SENST1 = (int64_t) prom[1];
 	int64_t OFFT1 = (int64_t) prom[2];
@@ -207,7 +194,7 @@ void log_airspeed()
     }
     else
     {
-        fprintf(airspeed_log, "%lld, %f, %f, %f, %d, %d\n",
+        fprintf(airspeed_log, "%lu, %f, %f, %f, %d, %d\n",
                 d.time,
                 d.airspeed,
                 d.pressure,

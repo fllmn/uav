@@ -54,7 +54,7 @@ int log_dsm(){
     }
 
 
-    fprintf(dsm_log,"%llu, %d, %d, %d, %d, %d, %d, %d, %d;\n",
+    fprintf(dsm_log,"%lu, %d, %d, %d, %d, %d, %d, %d, %d;\n",
             d.time_ns,
             d.channels[0],
             d.channels[1],

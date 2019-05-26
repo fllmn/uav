@@ -40,7 +40,7 @@ int telemetry_main(int uart_bus)
 
     LOG_I("Initilized telemtry thread");
 
-    size_t bytes = sprintf(print_buf, "Time \t\tLat \t\tLong \t\tAlt \n");
+    sprintf(print_buf, "Time \t\tLat \t\tLong \t\tAlt \n");
 
     while (rc_get_state() != EXITING)
     {

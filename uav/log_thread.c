@@ -4,6 +4,8 @@
 #include "baro.h"
 #include "dsm_thread.h"
 #include "gps.h"
+#include "battery.h"
+#include "airspeed.h"
 
 #define LOG_DELAY_US   1000000
 

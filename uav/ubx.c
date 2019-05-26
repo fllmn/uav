@@ -91,6 +91,7 @@ double getLongitude(){
 
 void getLatestPosition(positionType *pos)
 {
+    (void)(pos);
     pos = getLatest();
 }
 
@@ -142,8 +143,6 @@ messageClassType process_buffer(uint8_t *buf, size_t *size)
 
     size_t bytes_used = (size_t) bufferToFrame(buf) + 8;
 
-
-    printf("bufferSize=%d, bytesTaken=%d\n",*size, bytes_used);
     if (*size > bytes_used)
     {
         memmove(buf, &buf[bytes_used], ((*size)-bytes_used)*sizeof(uint8_t));
