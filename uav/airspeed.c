@@ -246,6 +246,7 @@ int airspeed_main()
     double pressure;
     double temperature;
     double airspeed;
+    double airspeed_filtered;
     while(rc_get_state() != EXITING)
     {
         D1 = get_conversion(MS_PRESSURE_4096);
@@ -275,9 +276,11 @@ int airspeed_main()
             calculate_airspeed(pressure, &airspeed);
         }
 
+        airspeed_filtered = 0.7*airspeed_filtered + 0.3*airspeed;
+
         airspeed_t d;
         d.time = rc_nanos_since_boot();
-        d.airspeed = airspeed;
+        d.airspeed = airspeed_filtered;
         d.pressure = pressure;
         d.temperature = temperature;
         d.pressure_raw = D1;
@@ -285,7 +288,7 @@ int airspeed_main()
 
         cbuffer_put(airspeed_buffer, &d);
 	//LOG(LOG_INFO, "Time %llu Pdiff %f [Pa] Temp %f [C] Airspeed %f [m/s] D1 %x D2 %x",d.time, pressure, temperature, airspeed, D1, D2);
-        rc_usleep(200000);
+        rc_usleep(100000);
 
     }
 
