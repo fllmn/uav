@@ -13,7 +13,10 @@ LDFLAGS		:= -pthread -lm -lrt -l:librobotcontrol.so.1
 
 SOURCES		:= $(wildcard *.c)
 INCLUDES	:= $(wildcard *.h)
-OBJECTS		:= $(SOURCES:$%.c=$%.o)
+OBJDIR 		:= obj
+SRCDIR 		:= .
+#OBJECTS		:= $(SOURCES:$%.c=$%.o)
+OBJECTS		:= $(patsubst %,$(OBJDIR)/%, $(SOURCES:$%.c=$%.o))
 
 prefix		:= /usr/local
 RM		:= rm -f
@@ -24,19 +27,22 @@ SYMLINK		:= ln -s -f
 SYMLINKDIR	:= /etc/robotcontrol
 SYMLINKNAME	:= link_to_startup_program
 
-
 # linking Objects
 $(TARGET): $(OBJECTS)
-	@$(LINKER) -o $@ $(OBJECTS) $(LDFLAGS)
+	@$(LINKER) -o $@ $^ $(LDFLAGS)
 	@echo "Made: $@"
 
 
 # compiling command
-$(OBJECTS): %.o : %.c $(INCLUDES)
+$(OBJECTS): $(OBJDIR)/%.o : %.c $(INCLUDE) | $(OBJDIR)
 	@$(CC) $(CFLAGS) $(WFLAGS) $(DEBUGFLAG) $< -o $@
 	@echo "Compiled: $@"
 
-all:	$(TARGET)
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+
+all: $(TARGET)
 
 debug:
 	$(MAKE) $(MAKEFILE) DEBUGFLAG="-g -D DEBUG"
@@ -52,6 +58,7 @@ install:
 
 clean:
 	@$(RM) $(OBJECTS)
+	@$(RM) -r $(OBJDIR)
 	@$(RM) $(TARGET)
 	@echo "$(TARGET) Clean Complete"
 
