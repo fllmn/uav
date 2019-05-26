@@ -106,7 +106,7 @@ static int initilize_airspeed()
 	return -1;
     }
 
-    
+    init_airspeed_log();
     init_time = rc_nanos_since_boot();
     return 0;
 }

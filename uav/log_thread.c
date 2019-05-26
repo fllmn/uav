@@ -20,6 +20,8 @@ void* log_thread_func()
 		log_baro();
 		log_dsm();
 		log_battery();
+                log_gps();
+                log_airspeed();
 	}
 	log_thread_ret_val = 0;
 	return (void*)&log_thread_ret_val;

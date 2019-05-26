@@ -148,6 +148,7 @@ int initialize_gps(int bus)
 
     enable_ubx_nav();
 
+    init_gps_log();
     return 0;
 }
 
