@@ -7,7 +7,7 @@ CC		:= gcc
 LINKER		:= gcc
 
 # compiler and linker flags
-WFLAGS		:= -Wall -Wextra -Werror=float-equal -Wuninitialized -Wunused-variable -Wdouble-promotion -Wimplicit-fallthrough=0
+WFLAGS		:= -Wall -Wextra -Werror=float-equal -Wuninitialized -Wunused-variable -Wdouble-promotion
 CFLAGS		:= -g -c -Wall
 LDFLAGS		:= -pthread -lm -lrt -l:librobotcontrol.so.1
 
