@@ -54,8 +54,8 @@ typedef struct __attribute__((__packed__))
         uint8_t confirmedTime	: 1;
     } flags2;
     uint8_t numSV;
-    int32_t latitude;
     int32_t longitude;
+    int32_t latitude;
     int32_t height;
     int32_t hMSL;
     uint32_t horizontalAccuracy;

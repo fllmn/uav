@@ -4,7 +4,7 @@
 #include "ubx-types.h"
 #include "ubx-nav.h"
 #define MM2M 1000
-#define DEGSCALING2RAD M_PI/180 * 0.00000001
+#define DEGSCALING2RAD M_PI/180 * 0.0000001
 
 positionType navPosition;
 
