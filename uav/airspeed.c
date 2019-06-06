@@ -174,7 +174,7 @@ static uint32_t get_conversion(uint8_t command)
 
 static int calculate_airspeed(double pressure, double *airspeed)
 {
-	*airspeed = sqrt(2*pressure/RHO_AIR);
+	*airspeed = sqrt(2*fabs(pressure)/RHO_AIR);
 	return 0;	
 }
 
