@@ -52,7 +52,7 @@ int log_baro(){
     }
 
 
-    fprintf(baro_log,"%lu, %f, %f, %f;\n",
+    fprintf(baro_log,"%llu, %f, %f, %f;\n",
             d.time_ns,
             d.bmp_data.temp_c,
             d.bmp_data.alt_m,

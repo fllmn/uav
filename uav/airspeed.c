@@ -190,11 +190,12 @@ void log_airspeed()
     airspeed_t d;
     if (cbuffer_try_get(airspeed_buffer, &d))
     {
-        LOG_W("LOG not available");
+        //LOG_W("Try get not available");
+	return -1;
     }
     else
     {
-        fprintf(airspeed_log, "%lu, %f, %f, %f, %d, %d\n",
+        fprintf(airspeed_log, "%llu, %f, %f, %f, %d, %d\n",
                 d.time,
                 d.airspeed,
                 d.pressure,

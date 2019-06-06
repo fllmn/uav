@@ -115,7 +115,7 @@ int log_imu(){
 	}
    
    
-	fprintf(imu_log,"%lu, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f;\n",
+	fprintf(imu_log,"%llu, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f;\n",
 	d.time_ns,
 	d.accel[0], d.accel[1], d.accel[2],
 	d.gyro[0], d.gyro[1], d.gyro[2],
