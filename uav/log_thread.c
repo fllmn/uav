@@ -7,7 +7,7 @@
 #include "battery.h"
 #include "airspeed.h"
 
-#define LOG_DELAY_US   1000000
+#define LOG_DELAY_US   2000000
 
 static int log_thread_ret_val;
 
