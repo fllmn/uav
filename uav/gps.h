@@ -5,7 +5,7 @@
 
 typedef struct gps_pvt_t
 {
-    uint16_t time_ns;
+    uint64_t time_ns;
     double latitude;
     double longitude;
     double altitude;

@@ -3,6 +3,7 @@
 #include "sys_log.h"
 #include "gps.h"
 #include "ubx.h"
+#include "ubx-nav.h"
 #include "circular_buffer.h"
 
 #define BAUDRATE 9600
@@ -171,7 +172,7 @@ void log_gps()
 	gps_pvt_t d;
 	if (cbuffer_try_get(gps_buffer, &d))
 	{
-		LOG_W("GPS log is empty");
+	//	LOG_W("GPS log is empty");
 		return;
 	}
 
@@ -186,15 +187,17 @@ void log_gps()
 
 static void push_latest()
 {
-    positionType latestPosition;
-    getLatestPosition(&latestPosition);
+    positionType *latestPosition = getLatest();
 
     gps_pvt_t element;
-    element.latitude = latestPosition.latitude;
-    element.longitude = latestPosition.latitude;
-    element.altitude = latestPosition.altitude;
+    element.latitude = latestPosition->latitude;
+    element.longitude = latestPosition->longitude;
+    element.altitude = latestPosition->altitude;
 
-    cbuffer_put(gps_buffer, &element);
+    if(cbuffer_put(gps_buffer, &element))
+    {
+    	LOG_E("Failed to put GPS element");
+    }
 }
 
 int get_latest_pvt(gps_pvt_t *latestPvt)
@@ -214,8 +217,16 @@ int get_latest_pvt(gps_pvt_t *latestPvt)
 int gps_main(int bus)
 {
     gps_buffer = create_cbuffer();
-    cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t));
+    if (gps_buffer == NULL)
+    {
+    	LOG_W("Failed to create gps buffer");
+    }
 
+    if (cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t)))
+    {
+    	LOG_W("Failed to init gps buffer");
+    }
+    
     if (initialize_gps(bus) == -1)
     {
         printf("ERROR: failed to initialize uart\n");
@@ -237,7 +248,7 @@ int gps_main(int bus)
             switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
             {
             case NAV:
-                printf("Latitude %f deg, Longitude %f deg\n", getLatitude(), getLongitude());
+//	        LOG_I("Latitude %f rad, Longitude %f rad", getLatitude(), getLongitude());
                 push_latest();
                 break;
             case UNKNOWN:
