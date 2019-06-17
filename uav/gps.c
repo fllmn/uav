@@ -112,13 +112,7 @@ void enable_ubx_nav()
 
     get_nav_enable_mess(tx_buf, &mess_size);
 
-    /*for (int i = 0; i < mess_size; i++)
-      {
-      printf("%02X ",tx_buf[i]);
-      }
-      printf("\n");*/
     rc_uart_write(uart_conf.bus,  tx_buf, mess_size);
-
 }
 
 int initialize_gps(int bus)
@@ -172,7 +166,6 @@ void log_gps()
 	gps_pvt_t d;
 	if (cbuffer_try_get(gps_buffer, &d))
 	{
-	//	LOG_W("GPS log is empty");
 		return;
 	}
 
@@ -187,12 +180,13 @@ void log_gps()
 
 static void push_latest()
 {
-    positionType *latestPosition = getLatest();
+    positionType latestPosition;
+    getLatest(&latestPosition);
 
     gps_pvt_t element;
-    element.latitude = latestPosition->latitude;
-    element.longitude = latestPosition->longitude;
-    element.altitude = latestPosition->altitude;
+    element.latitude = latestPosition.latitude;
+    element.longitude = latestPosition.longitude;
+    element.altitude = latestPosition.altitude;
 
     if(cbuffer_put(gps_buffer, &element))
     {
@@ -248,11 +242,9 @@ int gps_main(int bus)
             switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
             {
             case NAV:
-//	        LOG_I("Latitude %f rad, Longitude %f rad", getLatitude(), getLongitude());
                 push_latest();
                 break;
             case UNKNOWN:
-                //printf("Got UNKNOWN package\n");
                 break;
             default:
                 break;

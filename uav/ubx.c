@@ -91,8 +91,7 @@ double getLongitude(){
 
 void getLatestPosition(positionType *pos)
 {
-    (void)(pos);
-    pos = getLatest();
+    memcpy(pos, getLatest(), sizeof(positionType));
 }
 
 messageClassType processMessage()
