@@ -3,7 +3,6 @@
 #include "sys_log.h"
 #include "gps.h"
 #include "ubx.h"
-#include "ubx-nav.h"
 #include "circular_buffer.h"
 
 #define BAUDRATE 9600
@@ -151,7 +150,7 @@ void log_gps()
 static void push_latest()
 {
     positionType latestPosition;
-    getLatest(&latestPosition);
+    getLatestPosition(&latestPosition);
 
     gps_pvt_t element;
     element.latitude = latestPosition.latitude;

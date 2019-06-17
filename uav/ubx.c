@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include "sys_log.h"
 #include "ubx.h"
 #include "ubx-nav.h"
 #include "ubx-cfg.h"
@@ -111,7 +112,7 @@ messageClassType processMessage()
 
     if (ret == UNKNOWN)
     {
-        printf("ERROR: %s Unknown message type receives\n", __FUNCTION__);
+        LOG_W("%s Unknown message type receives", __FUNCTION__);
     }
 
     return ubxStorage.messageClass;
@@ -136,7 +137,7 @@ messageClassType process_buffer(uint8_t *buf, size_t *size)
 
     if (strncmp((char*)buf, sync_char, 2) != 0)
     {
-        printf("ERROR: %s buffer did not contain and sync char", __FUNCTION__);
+        LOG_E("%s buffer did not contain and sync char", __FUNCTION__);
         return UNKNOWN;
     }
 
@@ -155,7 +156,7 @@ messageClassType process_buffer(uint8_t *buf, size_t *size)
 
     if (validateChecksum(&ubxStorage))
     {
-        printf("ERROR: %s checksum failed\n", __FUNCTION__);
+        LOG_E("%s checksum failed", __FUNCTION__);
         return UNKNOWN;
     }
 
