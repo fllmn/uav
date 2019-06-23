@@ -31,21 +31,21 @@ struct uart_conf{
 
 static int init_gps_log()
 {
-	gps_log = fopen("gps.log", "w");
-	if (gps_log == NULL)
-	{
-		LOG_E("Could not open an GPS LOG file!");
-		return -1;
-	}
+    gps_log = fopen("gps.log", "w");
+    if (gps_log == NULL)
+    {
+        LOG_E("Could not open an GPS LOG file!");
+        return -1;
+    }
 
-	fprintf(gps_log, "time \tlat \tlon \taltitude\n");
-	return 0;
+    fprintf(gps_log, "time \tlat \tlon \taltitude\n");
+    return 0;
 }
 
 static int close_gps_log()
 {
-	fclose(gps_log);
-	return 0;
+    fclose(gps_log);
+    return 0;
 }
 
 static void setup_uart()
@@ -86,7 +86,7 @@ void enable_ubx_nav()
 
 int initialize_gps(int bus)
 {
-	if (init_gps_log()) return -1;
+    if (init_gps_log()) return -1;
 
     if (!(bus==1||bus==2))
     {
@@ -118,33 +118,33 @@ int initialize_gps(int bus)
 
 int finalize_gps()
 {
-	int r1 = rc_uart_close(uart_conf.bus);
-	int r2 = close_gps_log();
+    int r1 = rc_uart_close(uart_conf.bus);
+    int r2 = close_gps_log();
 
-	return (r1|r2);
+    return (r1|r2);
 }
 
 void log_gps()
 {
-	if (gps_log == NULL)
-	{
-		LOG_E("Tried to write to uninitialized gps log file");
-		return;
-	}
+    if (gps_log == NULL)
+    {
+        LOG_E("Tried to write to uninitialized gps log file");
+        return;
+    }
 
-	gps_pvt_t d;
-	if (cbuffer_try_get(gps_buffer, &d))
-	{
-		return;
-	}
+    gps_pvt_t d;
+    if (cbuffer_try_get(gps_buffer, &d))
+    {
+        return;
+    }
 
-	fprintf(gps_log, "%lu, %f, %f, %f",
-        rc_nanos_since_boot(),
-	d.latitude,
-	d.longitude,
-	d.altitude);
+    fprintf(gps_log, "%lu, %f, %f, %f",
+            rc_nanos_since_boot(),
+            d.latitude,
+            d.longitude,
+            d.altitude);
 
-	return;
+    return;
 }
 
 static void push_latest()
@@ -159,7 +159,7 @@ static void push_latest()
 
     if(cbuffer_put(gps_buffer, &element))
     {
-    	LOG_E("Failed to put GPS element");
+        LOG_E("Failed to put GPS element");
     }
 }
 
@@ -177,48 +177,56 @@ int get_latest_pvt(gps_pvt_t *latestPvt)
     return 0;
 }
 
+static int gps_process()
+{
+    int ret = UNKNOWN;
+    size_t rem_data = 0;
+    size_t bytes_avail = rc_uart_bytes_available(uart_conf.bus);
+    size_t bytes_read = 0;
+    while (bytes_avail > 1)
+    {
+
+        bytes_read = (bytes_avail > READ_SIZE) ? READ_SIZE : bytes_avail;
+        rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], bytes_read-1);
+        rem_data = rem_data + bytes_read-1;
+        bytes_avail =- bytes_read-1;
+        switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
+        {
+        case NAV:
+            push_latest();
+            ret = NAV;
+            break;
+        case UNKNOWN:
+            break;
+        default:
+            break;
+        }
+    }
+    return ret;
+
+}
 int gps_main(int bus)
 {
     gps_buffer = create_cbuffer();
     if (gps_buffer == NULL)
     {
-    	LOG_W("Failed to create gps buffer");
+        LOG_W("Failed to create gps buffer");
     }
 
     if (cbuffer_init(gps_buffer, GPS_BUFFER_SIZE, sizeof(gps_pvt_t)))
     {
-    	LOG_W("Failed to init gps buffer");
+        LOG_W("Failed to init gps buffer");
     }
-    
+
     if (initialize_gps(bus) == -1)
     {
         printf("ERROR: failed to initialize uart\n");
         return -1;
     }
 
-    size_t rem_data = 0;
     while(rc_get_state() != EXITING)
     {
-        size_t bytes_avail = rc_uart_bytes_available(uart_conf.bus);
-        size_t bytes_read = 0;
-        while (bytes_avail > 1)
-        {
-
-            bytes_read = (bytes_avail > READ_SIZE) ? READ_SIZE : bytes_avail;
-            rc_uart_read_bytes(uart_conf.bus,(uint8_t*) &uart_conf.buf[rem_data], bytes_read-1);
-            rem_data = rem_data + bytes_read-1;
-            bytes_avail =- bytes_read-1;
-            switch(process_buffer((uint8_t*)uart_conf.buf, &rem_data))
-            {
-            case NAV:
-                push_latest();
-                break;
-            case UNKNOWN:
-                break;
-            default:
-                break;
-            }
-        }
+        gps_process();
         rc_usleep(10000);
     }
 
