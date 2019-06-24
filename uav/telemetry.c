@@ -21,7 +21,7 @@ static int initTelemetry()
 
     if (rc_uart_init(bus, 57600, 0.5, 0, 1, 0))
     {
-        LOG_E(" Failed to initialize uart");
+        LOG_W(" Failed to initialize uart");
         return -1;
     }
 
