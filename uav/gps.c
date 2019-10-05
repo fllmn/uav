@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <robotcontrol.h>
+#include <rc/gpio.h>
 #include "sys_log.h"
 #include "gps.h"
 #include "ubx.h"
@@ -15,7 +16,9 @@
 static int gps_thread_ret_val;
 #define GPS_BUFFER_SIZE 30
 unsigned int gps_buffer_idx = 0;
-
+static bool has_pps = false;
+static int pps_pin = -1;
+static uint64_t event_time = 0;
 cbuffer_handle_t gps_buffer;
 static FILE *gps_log;
 
@@ -153,6 +156,7 @@ static void push_latest()
     getLatestPosition(&latestPosition);
 
     gps_pvt_t element;
+    element.time_ns = event_time;
     element.latitude = latestPosition.latitude;
     element.longitude = latestPosition.longitude;
     element.altitude = latestPosition.altitude;
@@ -205,7 +209,23 @@ static int gps_process()
     return ret;
 
 }
-int gps_main(int bus)
+
+int setup_pps_pin(int pps_pin_nbr)
+{
+    pps_pin = rc_gpio_init_event(0, pps_pin_nbr, 0, RC_GPIOEVENT_RISING_EDGE);
+
+    if (pps_pin == -1)
+    {
+        LOG_E("Failed to setup event pin", __FUNCTION__);
+        return -1;
+    }
+
+    has_pps = true;
+
+    return 0;
+}
+
+int gps_main(int bus, int pps_pin_nbr)
 {
     gps_buffer = create_cbuffer();
     if (gps_buffer == NULL)
@@ -224,10 +244,30 @@ int gps_main(int bus)
         return -1;
     }
 
+    if (pps_pin_nbr != -1)
+    {
+        if (setup_pps_pin(pps_pin_nbr))
+        {
+            LOG_W("Failed to setup PPS input");
+        }
+    }
+
     while(rc_get_state() != EXITING)
     {
-        gps_process();
-        rc_usleep(10000);
+        if (!has_pps)
+        {
+            event_time = rc_nanos_since_epoch();
+            gps_process();
+            rc_usleep(10000);
+        }
+        else
+        {
+            int event = rc_gpio_poll(0, pps_pin_nbr, 100, &event_time);
+            if (event == RC_GPIOEVENT_RISING_EDGE)
+            {
+                gps_process();
+            }
+        }
     }
 
     return 0;
@@ -236,7 +276,7 @@ int gps_main(int bus)
 
 void *gps_thread_func()
 {
-    gps_thread_ret_val = gps_main(2);
+    gps_thread_ret_val = gps_main(2, 17);
     if (gps_thread_ret_val == -1)
     {
         rc_set_state(EXITING);
