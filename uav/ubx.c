@@ -31,7 +31,7 @@ int calculateChecksum(ubxFrame *frame)
     uint8_t *bytePointer = (uint8_t*) frame + sizeof(uint16_t);
     uint16_t chksm = checksum(frame->messageLength+4, bytePointer);
 
-    memcpy(frame->checksumA, &chksm, sizeof(uint16_t));
+    memcpy(&frame->checksumA, &chksm, sizeof(uint16_t));
     ret = 0;
     return ret;
 }
