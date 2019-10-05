@@ -13,12 +13,17 @@ static gps_pvt_t latest_pvt;
 static bmp_entry_t latest_baro;
 static imu_entry_t latest_imu;
 static char print_buf[1024];
-
+static uint32_t custom_mode;
+static uint8_t type;
+static uint8_t autopilot;
+static uint8_t base_mode;
+static uint8_t system_status;
 static int initTelemetry()
 {
     rc_pinmux_set(UART1_HEADER_PIN_3, PINMUX_UART);
     rc_pinmux_set(UART1_HEADER_PIN_4, PINMUX_UART);
 
+#ifndef MAVLINK
     if (rc_uart_init(bus, 57600, 0.5, 0, 1, 0))
     {
         LOG_E(" Failed to initialize uart");
@@ -26,7 +31,13 @@ static int initTelemetry()
     }
 
     rc_uart_flush(bus);
-
+#else
+    if (rc_mav_init(1, 1, 50000))
+    {
+        LOG_E(" Failed to initilize MAVLINK");
+        return -1;
+    }
+#endif
     return 0;
 }
 
@@ -59,6 +70,7 @@ int telemetry_main(int uart_bus)
             LOG_E("Failed to get imu data");
         }
 
+#ifndef MAVLINK
         size_t bytes = sprintf(print_buf, "%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f \t%5f\n",
                                latest_imu.accel[0], latest_imu.accel[1], latest_imu.accel[2],
                                latest_imu.gyro[0], latest_imu.gyro[1], latest_imu.gyro[2],
@@ -71,6 +83,16 @@ int telemetry_main(int uart_bus)
                                latest_pvt.latitude,
                                latest_pvt.longitude,
                                latest_pvt.altitude);
+#else
+        rc_mav_send_heartbeat(custom_mode, type, autopilot, base_mode, system_status);
+        rc_mav_send_global_position_int((int32_t) latest_pvt.latitude*1E7,
+                                        (int32_t) latest_pvt.longitude*1E7,
+                                        (int32_t) latest_pvt.altitude*1E3,
+                                        (int32_t) latest_pvt.altitude*1E3,
+                                        0,
+                                        0,
+                                        0,
+                                        0);
         rc_uart_write(bus,(uint8_t*) print_buf, bytes);
         rc_usleep(1000000);
     }
