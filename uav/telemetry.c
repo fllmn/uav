@@ -96,7 +96,7 @@ int telemetry_main(int uart_bus)
         rc_uart_write(bus,(uint8_t*) print_buf, bytes);
         rc_usleep(1000000);
     }
-
+#endif
     return 1;
 }
 
